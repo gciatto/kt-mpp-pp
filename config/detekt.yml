@@ -1,8 +1,10 @@
 complexity:
   NestedBlockDepth:
     threshold: 5
-#  TooManyFunctions:
-#    threshold: 20
+  TooManyFunctions:
+    thresholdInClasses: 21
+    thresholdInObjects: 21
+    ignorePrivate: true
 performance:
   SpreadOperator:
     active: false

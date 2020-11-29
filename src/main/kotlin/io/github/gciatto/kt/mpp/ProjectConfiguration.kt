@@ -8,6 +8,7 @@ import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.tasks.BintrayUploadTask
 import io.github.gciatto.kt.mpp.ProjectExtensions.ktMpp
 import io.github.gciatto.kt.mpp.ProjectUtils.docDir
+import io.github.gciatto.kt.mpp.ProjectUtils.log
 import io.github.gciatto.kt.mpp.ProjectUtils.warn
 import io.github.gciatto.kt.node.Bugs
 import io.github.gciatto.kt.node.NpmPublishExtension
@@ -50,6 +51,7 @@ object ProjectConfiguration {
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     fun Project.configureGitHubReleaseForRootProject() {
         if (this == rootProject) {
             project.configure<GithubReleaseExtension> {
@@ -69,7 +71,7 @@ object ProjectConfiguration {
                             |${changelog().call()}
                             """.trimMargin()
                         )
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         e.message?.let { warn(it) }
                     }
                 }
