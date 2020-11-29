@@ -1,11 +1,24 @@
 package io.github.gciatto.kt.mpp
 
+import org.gradle.api.JavaVersion
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.SetProperty
 import org.gradle.kotlin.dsl.property
 
 class KtMppPlusPlusExtension(objects: ObjectFactory) {
+
+    companion object {
+        const val NAME = "kotlinMultiplatform"
+
+        object Defaults {
+            val JAVA_VERSION = JavaVersion.VERSION_1_8
+            const val MOCHA_TIMEOUT = 60_000L // ms
+            const val KT_FREE_COMPILER_ARGS_JVM = "-Xjvm-default=enable"
+        }
+    }
+
     val projectLongName: Property<String> = objects.property()
 
     val githubToken: Property<String> = objects.property()
@@ -19,6 +32,11 @@ class KtMppPlusPlusExtension(objects: ObjectFactory) {
     val projectHomepage: Property<String> = objects.property()
     val projectLicense: Property<String> = objects.property()
     val projectLicenseUrl: Property<String> = objects.property()
+
+    val mochaTimeout: Property<Long> = objects.property()
+
+    val javaVersion: Property<JavaVersion> = objects.property()
+    val ktFreeCompilerArgsJvm: Property<String> = objects.property()
 
     val developers: ListProperty<Developer> = objects.listProperty(Developer::class.java)
 
@@ -37,4 +55,14 @@ class KtMppPlusPlusExtension(objects: ObjectFactory) {
 
     val issuesUrl: Property<String> = objects.property()
     val issuesEmail: Property<String> = objects.property()
+
+    val jsProjects: SetProperty<String> = objects.setProperty(String::class.java)
+    val jvmProjects: SetProperty<String> = objects.setProperty(String::class.java)
+    val otherProjects: SetProperty<String> = objects.setProperty(String::class.java)
+
+    init {
+        javaVersion.set(Defaults.JAVA_VERSION)
+        mochaTimeout.set(Defaults.MOCHA_TIMEOUT)
+        ktFreeCompilerArgsJvm.set(Defaults.KT_FREE_COMPILER_ARGS_JVM)
+    }
 }

@@ -1,11 +1,17 @@
+@file:Suppress("unused")
+
 package io.github.gciatto.kt.mpp
 
 import com.github.breadmoirai.githubreleaseplugin.GithubReleaseExtension
 import com.github.breadmoirai.githubreleaseplugin.GithubReleaseTask
 import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.tasks.BintrayUploadTask
-import io.github.gciatto.kt.node.*
-import org.gradle.api.*
+import io.github.gciatto.kt.node.Bugs
+import io.github.gciatto.kt.node.NpmPublishExtension
+import io.github.gciatto.kt.node.PackageJson
+import org.gradle.api.DefaultTask
+import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.bundling.Jar
@@ -243,9 +249,47 @@ fun Project.configureUploadToMavenCentral() {
     }
 }
 
+fun Project.createMavenPublications(name: String, vararg componentsStrings: String, docArtifact: String? = null) {
+    val sourcesJar by tasks.creating(Jar::class) {
+        archiveBaseName.set(project.name)
+        archiveVersion.set(project.version.toString())
+        archiveClassifier.set("sources")
+    }
+
+    configure<PublishingExtension> {
+        publications.create<MavenPublication>(name) {
+            groupId = project.group.toString()
+            version = project.version.toString()
+
+            for (component in componentsStrings) {
+                if (component in components.names) {
+                    from(components[component])
+                } else {
+                    warn("Missing component $component in ${project.name} for publication $name")
+                }
+            }
+
+            if (docArtifact != null && docArtifact in tasks.names) {
+                artifact(tasks.getByName(docArtifact)) {
+                    it.classifier = "javadoc"
+                }
+            } else if (docArtifact == null || !docArtifact.endsWith("KotlinMultiplatform")) {
+                log(
+                        "No javadoc artifact for publication $name in project ${project.name}: " +
+                                "no such a task: $docArtifact"
+                )
+            }
+
+            artifact(sourcesJar)
+
+            configurePom(project)
+        }
+    }
+}
+
 fun Project.configureMavenPublications(docArtifactBaseName: String) {
     configure<PublishingExtension> {
-        publications.withType(MavenPublication::class.java) {pub ->
+        publications.withType(MavenPublication::class.java) { pub ->
             pub.groupId = project.group.toString()
             pub.version = project.version.toString()
 
@@ -313,26 +357,27 @@ fun Project.configureJsPackage() {
             it.bugs = Bugs(ktMpp.issuesUrl.get(), ktMpp.issuesEmail.get())
             it.license = ktMpp.projectLicense.get()
             it.version = it.version?.substringBefore('+')
-            it.dependencies = it.dependencies?.filterKeys { key -> "kotlin-test" !in key }
-                    ?.mapValues { (key, value) ->
-                        val temp = if (value.startsWith("file:")) {
-                            value.split('/', '\\').last()
-                        } else {
-                            value
-                        }
-                        if (rootProject.name in key) temp.substringBefore('+') else temp
-                    }?.toMutableMap()
+            liftPackageJsonToFixDependencies(it)
             if (ktMpp.npmOrganization.isPresent) {
                 liftPackageJsonToSetOrganization(ktMpp.npmOrganization.get(), it)
-            }
-        }
-
-        if (ktMpp.npmOrganization.isPresent) {
-            liftJsSources { _, _, line ->
-                liftJsSourcesToSetOrganization(ktMpp.npmOrganization.get(), line)
+                liftJsSources { _, _, line ->
+                    liftJsSourcesToSetOrganization(ktMpp.npmOrganization.get(), line)
+                }
             }
         }
     }
+}
+
+fun Project.liftPackageJsonToFixDependencies(packageJson: PackageJson) {
+    packageJson.dependencies = packageJson.dependencies?.filterKeys { key -> "kotlin-test" !in key }
+            ?.mapValues { (key, value) ->
+                val temp = if (value.startsWith("file:")) {
+                    value.split('/', '\\').last()
+                } else {
+                    value
+                }
+                if (rootProject.name in key) temp.substringBefore('+') else temp
+            }?.toMutableMap()
 }
 
 fun Project.liftPackageJsonToSetOrganization(organizationName: String, packageJson: PackageJson) {
@@ -346,3 +391,45 @@ fun Project.liftPackageJsonToSetOrganization(organizationName: String, packageJs
 fun Project.liftJsSourcesToSetOrganization(organizationName: String, line: String): String =
     line.replace("'${rootProject.name}", "'@$organizationName/${rootProject.name}")
         .replace("\"${rootProject.name}", "\"@$organizationName/${rootProject.name}")
+
+val Project.isJvmProject: Boolean
+    get() = name in ktMpp.jvmProjects.getOrElse(emptySet())
+
+val Project.isJsProject: Boolean
+    get() = name in ktMpp.jsProjects.getOrElse(emptySet())
+
+val Project.isOtherProject: Boolean
+    get() = name in ktMpp.otherProjects.getOrElse(emptySet())
+
+val Project.isKtProject: Boolean
+    get() = !isJvmProject && !isJsProject && !isOtherProject
+
+val Project.jvmProjects: Sequence<Project>
+    get() {
+        if (this != rootProject) error("jvmProjects property is only defined for the root project")
+        val jvmProjectNames = ktMpp.jvmProjects.getOrElse(emptySet())
+        return allprojects.asSequence().filter { it.name in jvmProjectNames }
+    }
+
+val Project.jsProjects: Sequence<Project>
+    get() {
+        if (this != rootProject) error("jsProjects property is only defined for the root project")
+        val jsProjectNames = ktMpp.jsProjects.getOrElse(emptySet())
+        return allprojects.asSequence().filter { it.name in jsProjectNames }
+    }
+
+val Project.otherProjects: Sequence<Project>
+    get() {
+        if (this != rootProject) error("otherProjects property is only defined for the root project")
+        val otherProjectNames = ktMpp.otherProjects.getOrElse(emptySet())
+        return allprojects.asSequence().filter { it.name in otherProjectNames }
+    }
+
+val Project.ktProjects: Sequence<Project>
+    get() {
+        if (this != rootProject) error("ktProjects property is only defined for the root project")
+        val nonKtProjectsName = setOf(ktMpp.jvmProjects, ktMpp.jsProjects, ktMpp.otherProjects)
+                .flatMap { it.getOrElse(emptySet()) }
+                .toSet()
+        return allprojects.asSequence().filter { it.name !in nonKtProjectsName }
+    }
