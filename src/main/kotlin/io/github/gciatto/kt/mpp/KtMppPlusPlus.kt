@@ -19,7 +19,12 @@ import org.gradle.api.tasks.bundling.Zip
 import org.gradle.api.tasks.testing.AbstractTestTask
 import org.gradle.api.tasks.testing.TestDescriptor
 import org.gradle.api.tasks.testing.TestResult
-import org.gradle.kotlin.dsl.*
+import org.gradle.kotlin.dsl.apply
+import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.get
+import org.gradle.kotlin.dsl.create
+import org.gradle.kotlin.dsl.maven
+import org.gradle.kotlin.dsl.KotlinClosure2
 import org.gradle.plugins.signing.Sign
 import org.gradle.plugins.signing.SigningExtension
 import org.jetbrains.dokka.gradle.DokkaTask
@@ -37,7 +42,9 @@ fun Project.configureTestResultPrinting() {
         it.afterSuite(
                 KotlinClosure2({ desc: TestDescriptor, result: TestResult ->
                     if (desc.parent == null) { // will match the outermost suite
-                        println("Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)")
+                        println("Results: ${result.resultType} (${result.testCount} tests, " +
+                                "${result.successfulTestCount} successes, ${result.failedTestCount} failures, " +
+                                "${result.skippedTestCount} skipped)")
                     }
                 })
         )
@@ -98,7 +105,7 @@ fun Project.configureGitHubReleaseForRootProject() {
                         |${changelog().call()}
                         """.trimMargin()
                     )
-                } catch (e: Throwable) {
+                } catch (e: Exception) {
                     e.message?.let { warn(it) }
                 }
             }
@@ -109,7 +116,7 @@ fun Project.configureGitHubReleaseForRootProject() {
 }
 
 fun Project.configureUploadToGithub(vararg tasks: Zip) {
-    if (ktMpp.githubToken.isPresent.not() || ktMpp.githubToken.get().isBlank()) return;
+    if (ktMpp.githubToken.isPresent.not() || ktMpp.githubToken.get().isBlank()) return
 
     val archiveFiles = tasks.map { it.archiveFile }
 
@@ -123,8 +130,8 @@ fun Project.configureUploadToGithub(vararg tasks: Zip) {
 }
 
 fun Project.configureUploadToGithub(
-        jarTaskPositiveFilter: (String) -> Boolean = { "jar" in it },
-        jarTaskNegativeFilter: (String) -> Boolean = { "dokka" in it || "source" in it }
+    jarTaskPositiveFilter: (String) -> Boolean = { "jar" in it },
+    jarTaskNegativeFilter: (String) -> Boolean = { "dokka" in it || "source" in it }
 ) {
     val zipTasks = tasks.withType(Zip::class.java).asSequence()
             .filter { jarTaskPositiveFilter(it.name.toLowerCase()) }
@@ -219,7 +226,7 @@ fun Project.configureUploadToBintray(vararg publicationNames: String) {
         }
         override = true
         with(pkg) {
-            repo = ktMpp.bintrayRepo.get() //bintrayRepo
+            repo = ktMpp.bintrayRepo.get() // bintrayRepo
             name = project.name
             userOrg = ktMpp.bintrayUserOrg.get()
             vcsUrl = ktMpp.projectHomepage.get()
@@ -250,10 +257,10 @@ fun Project.configureUploadToMavenCentral() {
 }
 
 fun Project.createMavenPublications(name: String, vararg componentsStrings: String, docArtifact: String? = null) {
-    val sourcesJar by tasks.creating(Jar::class) {
-        archiveBaseName.set(project.name)
-        archiveVersion.set(project.version.toString())
-        archiveClassifier.set("sources")
+    val sourcesJar = tasks.create("sourcesJar", Jar::class) {
+        it.archiveBaseName.set(project.name)
+        it.archiveVersion.set(project.version.toString())
+        it.archiveClassifier.set("sources")
     }
 
     configure<PublishingExtension> {
@@ -300,7 +307,8 @@ fun Project.configureMavenPublications(docArtifactBaseName: String) {
                     it.classifier = "javadoc"
                 }
             } else if (!docArtifact.endsWith("KotlinMultiplatform")) {
-                log("No javadoc artifact for publication $name in projeitct ${project.name}: no such a task: $docArtifact")
+                log("No javadoc artifact for publication $name in projeitct ${project.name}: " +
+                        "no such a task: $docArtifact")
             }
 
             pub.configurePom(project)

@@ -1,6 +1,7 @@
 package io.github.gciatto.kt.mpp
 
 import com.jfrog.bintray.gradle.BintrayPlugin
+import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.AUTOMATICALLY_CONFIGURE_PROJECTS
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaLibraryPlugin
@@ -28,9 +29,11 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         extension = target.extensions.create(KtMppPlusPlusExtension.NAME, KtMppPlusPlusExtension::class.java)
         target.loadDefaultsFromProperties()
-        target.configureProject()
-        target.subprojects {
-            it.apply<KtMppPlusPlusPlugin>()
+        if (extension.automaticallyConfigureProjects.getOrElse(AUTOMATICALLY_CONFIGURE_PROJECTS)) {
+            target.configureProject()
+            target.subprojects {
+                it.apply<KtMppPlusPlusPlugin>()
+            }
         }
     }
 

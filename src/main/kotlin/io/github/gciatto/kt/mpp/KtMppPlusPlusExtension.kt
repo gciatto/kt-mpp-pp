@@ -1,5 +1,6 @@
 package io.github.gciatto.kt.mpp
 
+import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.AUTOMATICALLY_CONFIGURE_PROJECTS
 import org.gradle.api.JavaVersion
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
@@ -16,8 +17,11 @@ class KtMppPlusPlusExtension(objects: ObjectFactory) {
             val JAVA_VERSION = JavaVersion.VERSION_1_8
             const val MOCHA_TIMEOUT = 60_000L // ms
             const val KT_FREE_COMPILER_ARGS_JVM = "-Xjvm-default=enable"
+            const val AUTOMATICALLY_CONFIGURE_PROJECTS = true
         }
     }
+
+    val automaticallyConfigureProjects: Property<Boolean> = objects.property()
 
     val projectLongName: Property<String> = objects.property()
 
@@ -64,5 +68,6 @@ class KtMppPlusPlusExtension(objects: ObjectFactory) {
         javaVersion.set(Defaults.JAVA_VERSION)
         mochaTimeout.set(Defaults.MOCHA_TIMEOUT)
         ktFreeCompilerArgsJvm.set(Defaults.KT_FREE_COMPILER_ARGS_JVM)
+        automaticallyConfigureProjects.set(AUTOMATICALLY_CONFIGURE_PROJECTS)
     }
 }
