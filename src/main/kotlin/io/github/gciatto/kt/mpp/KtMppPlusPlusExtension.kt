@@ -8,7 +8,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.provider.SetProperty
 import org.gradle.kotlin.dsl.property
 
-class KtMppPlusPlusExtension(objects: ObjectFactory) {
+open class KtMppPlusPlusExtension(objects: ObjectFactory) {
 
     companion object {
         const val NAME = "kotlinMultiplatform"
@@ -80,6 +80,13 @@ class KtMppPlusPlusExtension(objects: ObjectFactory) {
     val jvmProjects: SetProperty<String> = objects.setProperty(String::class.java)
 
     val otherProjects: SetProperty<String> = objects.setProperty(String::class.java)
+
+    @JvmOverloads
+    fun developer(name: String, email: String, homepage: String? = null, organization: Organization? = null) =
+            developers.add(Developer(name, email, homepage, organization))
+
+    fun org(name: String, url: String) =
+            Organization(name, url)
 
     init {
         javaVersion.set(Defaults.JAVA_VERSION)

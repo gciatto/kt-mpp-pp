@@ -1,5 +1,6 @@
 package io.github.gciatto.kt.mpp
 
+import com.github.breadmoirai.githubreleaseplugin.GithubReleasePlugin
 import com.jfrog.bintray.gradle.BintrayPlugin
 import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.AUTOMATICALLY_CONFIGURE_PROJECTS
 import io.github.gciatto.kt.mpp.ProjectConfiguration.configureDokka
@@ -65,7 +66,7 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
 
     private fun Project.loadDefaultsFromProperties() {
         with(extension) {
-            projectLongName.set(project.description)
+            projectLongName.set(project.provider { description ?: name })
             githubToken.set(getPropertyOrWarnForAbsence("githubToken"))
             githubOwner.set(getPropertyOrWarnForAbsence("githubOwner"))
             githubRepo.set(getPropertyOrWarnForAbsence("githubRepo"))
@@ -228,7 +229,7 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
     private fun Project.configureKtProject() {
         configureAllProjects()
 
-        apply<KotlinMultiplatformPlugin>()
+        apply(plugin = "org.jetbrains.kotlin.multiplatform")
         apply<MavenPublishPlugin>()
         apply<SigningPlugin>()
         apply<DokkaPlugin>()
@@ -313,16 +314,24 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
     }
 
     private fun Project.configureRootProject() {
+        apply<GithubReleasePlugin>()
+
         configureKtProject()
-        val dokkaHtmlMultiModule = tasks.getByName("dokkaHtmlMultiModule") as DokkaMultiModuleTask
-        val packDokkaMultiModule = tasks.create<Zip>("packDokkaMultiModule") {
-            group = "documentation"
-            dependsOn(dokkaHtmlMultiModule)
-            from(dokkaHtmlMultiModule.outputDirectory.get())
-            archiveBaseName.set(project.name)
-            archiveVersion.set(project.version.toString())
-            archiveAppendix.set("documentation")
+        configureDokkaMultiModule()
+    }
+
+    private fun Project.configureDokkaMultiModule() {
+        tasks.withType(DokkaMultiModuleTask::class.java).configureEach { dokkaHtmlMultiModule ->
+            val packDokkaMultiModule = tasks.register("packDokkaMultiModule", Zip::class.java)
+            packDokkaMultiModule.configure {
+                it.group = "documentation"
+                it.dependsOn(dokkaHtmlMultiModule)
+                it.from(dokkaHtmlMultiModule.outputDirectory.get())
+                it.archiveBaseName.set(project.name)
+                it.archiveVersion.set(project.version.toString())
+                it.archiveAppendix.set("documentation")
+            }
+            configureUploadToGithub(packDokkaMultiModule.get())
         }
-        configureUploadToGithub(packDokkaMultiModule)
     }
 }

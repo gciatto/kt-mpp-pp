@@ -108,13 +108,8 @@ object ProjectConfiguration {
         configureUploadToGithub(*zipTasks)
     }
 
-    private inline fun <reified T : Task> Project.task(name: String, crossinline conf: T.() -> Unit): T =
-            tasks.getByName(name) {
-                with(it as T, conf)
-            } as T
-
     fun Project.configureDokka(vararg platforms: String) {
-        tasks.withType(DokkaTask::class.java).configureEach {
+        tasks.withType(DokkaTask::class.java).forEach {
             it.outputDirectory.set(docDir)
 
             it.dokkaSourceSets.apply {
@@ -134,7 +129,7 @@ object ProjectConfiguration {
             val jarPlatform = tasks.withType(Jar::class.java).map { it.name.replace("Jar", "") }
 
             jarPlatform.forEach { p ->
-                val packDokkaForPlatform = task<Jar>("packDokka${p.capitalize()}") {
+                val packDokkaForPlatform = tasks.create<Jar>("packDokka${p.capitalize()}") {
                     group = "documentation"
                     dependsOn("dokkaHtml")
                     from(docDir)
@@ -171,7 +166,7 @@ object ProjectConfiguration {
             val pubs = publications.withType(MavenPublication::class.java).map {
                 "sign${it.name.capitalize()}Publication"
             }
-            project.task<Sign>("signAllPublications") {
+            tasks.create<Sign>("signAllPublications") {
                 dependsOn(*pubs.toTypedArray())
             }
         }

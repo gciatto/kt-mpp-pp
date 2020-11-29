@@ -1,0 +1,15 @@
+plugins {
+    id 'io.github.gciatto.kt-mpp-pp'
+}
+
+group 'org.example'
+version '1.0.0'
+description 'Single'
+
+repositories {
+    mavenCentral()
+}
+
+kotlinMultiplatform {
+    developer("Giovanni Ciatto", "giovanni.ciatto@gmail.com", "http://about.me/gciatto")
+}

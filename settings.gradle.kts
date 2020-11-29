@@ -11,4 +11,4 @@ buildscript {
     }
 }
 bootstrapRefreshVersionsAndDependencies(justAdditionalAliases)
-rootProject.name = "kt-mpp++"
+rootProject.name = "kt-mpp-pp"
