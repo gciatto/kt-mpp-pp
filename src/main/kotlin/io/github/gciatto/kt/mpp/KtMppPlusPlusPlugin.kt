@@ -2,6 +2,20 @@ package io.github.gciatto.kt.mpp
 
 import com.jfrog.bintray.gradle.BintrayPlugin
 import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.AUTOMATICALLY_CONFIGURE_PROJECTS
+import io.github.gciatto.kt.mpp.ProjectConfiguration.configureDokka
+import io.github.gciatto.kt.mpp.ProjectConfiguration.configureJsPackage
+import io.github.gciatto.kt.mpp.ProjectConfiguration.configureKtLint
+import io.github.gciatto.kt.mpp.ProjectConfiguration.configureMavenPublications
+import io.github.gciatto.kt.mpp.ProjectConfiguration.configureSigning
+import io.github.gciatto.kt.mpp.ProjectConfiguration.configureTestResultPrinting
+import io.github.gciatto.kt.mpp.ProjectConfiguration.configureUploadToBintray
+import io.github.gciatto.kt.mpp.ProjectConfiguration.configureUploadToGithub
+import io.github.gciatto.kt.mpp.ProjectConfiguration.configureUploadToMavenCentral
+import io.github.gciatto.kt.mpp.ProjectConfiguration.createMavenPublications
+import io.github.gciatto.kt.mpp.ProjectExtensions.isJsProject
+import io.github.gciatto.kt.mpp.ProjectExtensions.isJvmProject
+import io.github.gciatto.kt.mpp.ProjectExtensions.isOtherProject
+import io.github.gciatto.kt.mpp.ProjectUtils.getPropertyOrWarnForAbsence
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaLibraryPlugin
