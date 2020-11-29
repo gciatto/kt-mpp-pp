@@ -1,6 +1,8 @@
 complexity:
   NestedBlockDepth:
     threshold: 5
+#  TooManyFunctions:
+#    threshold: 20
 performance:
   SpreadOperator:
     active: false

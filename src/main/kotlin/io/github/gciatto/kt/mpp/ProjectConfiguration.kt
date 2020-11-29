@@ -64,10 +64,10 @@ object ProjectConfiguration {
                     draft { false }
                     try {
                         body(
-                                """
-                        |## CHANGELOG
-                        |${changelog().call()}
-                        """.trimMargin()
+                            """
+                            |## CHANGELOG
+                            |${changelog().call()}
+                            """.trimMargin()
                         )
                     } catch (e: Exception) {
                         e.message?.let { warn(it) }
@@ -166,8 +166,9 @@ object ProjectConfiguration {
             }
         }
         configure<PublishingExtension> {
-            val pubs = publications.withType(MavenPublication::class.java).map { "sign${it.name.capitalize()}Publication" }
-
+            val pubs = publications.withType(MavenPublication::class.java).map {
+                "sign${it.name.capitalize()}Publication"
+            }
             project.task<Sign>("signAllPublications") {
                 dependsOn(*pubs.toTypedArray())
             }
@@ -317,7 +318,7 @@ object ProjectConfiguration {
         }
     }
 
-    fun Project.configureJsPackage() {
+    fun Project.configureNpmPublishing() {
         if (project == rootProject) return
 
         configure<NpmPublishExtension> {
