@@ -262,13 +262,14 @@ object ProjectConfiguration {
 
     fun MavenPublication.configurePom(project: Project) {
         pom { pom ->
-            val moduleName = project.name.split('-').map { it.capitalize() }.joinToString(" ")
+            val moduleName = project.name.split('-').joinToString(" ") { it.capitalize() }
             val pomName = project.ktMpp.projectLongName.get() + if (project.isMultiProject) {
                 " -- Module `$moduleName`"
             } else {
                 ""
             }
             pom.name.set(pomName)
+            pom.description.set(project.ktMpp.projectDescription.get())
             pom.url.set(project.ktMpp.projectHomepage.get())
             pom.licenses { licenses ->
                 licenses.license {
@@ -312,6 +313,7 @@ object ProjectConfiguration {
             token.set(ktMpp.npmToken.get())
             liftPackageJson {
                 it.people = ktMpp.developers.get().map(Developer::toNpmPeople).toMutableList()
+                // TODO support description
                 it.homepage = ktMpp.projectHomepage.get()
                 it.bugs = Bugs(ktMpp.issuesUrl.get(), ktMpp.issuesEmail.get())
                 it.license = ktMpp.projectLicense.get()

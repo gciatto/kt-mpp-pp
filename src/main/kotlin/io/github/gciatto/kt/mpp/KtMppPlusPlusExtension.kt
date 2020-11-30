@@ -29,6 +29,8 @@ open class KtMppPlusPlusExtension(objects: ObjectFactory) {
 
     val projectLongName: Property<String> = objects.property()
 
+    val projectDescription: Property<String> = objects.property()
+
     val githubToken: Property<String> = objects.property()
 
     val githubOwner: Property<String> = objects.property()

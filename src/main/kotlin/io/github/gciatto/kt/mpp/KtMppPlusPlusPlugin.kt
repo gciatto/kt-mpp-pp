@@ -69,7 +69,8 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
 
     private fun Project.loadDefaultsFromProperties() {
         with(extension) {
-            projectLongName.set(project.provider { description ?: name })
+            projectLongName.set(project.provider { name })
+            projectDescription.set(getPropertyOrWarnForAbsence("projectDescription"))
             githubToken.set(getPropertyOrWarnForAbsence("githubToken"))
             githubOwner.set(getPropertyOrWarnForAbsence("githubOwner"))
             githubRepo.set(getPropertyOrWarnForAbsence("githubRepo"))
@@ -111,6 +112,7 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
     }
 
     private fun Project.configureAllProjects() {
+        description = extension.projectDescription.get()
         repositories.add(rootProject.repositories.gradlePluginPortal())
         repositories.add(rootProject.repositories.mavenCentral())
         configureTestResultPrinting()

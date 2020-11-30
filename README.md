@@ -27,11 +27,13 @@ The root project's `grale.properties` should contain the following properties:
 ```properties
 io.github.gciatto.kt-npm-publish.verbose=false
 
-githubToken=GITHUB_TOKEN
+projectLongName=Project Long Name (defaults to project name)
+projectDescription=Project description
+githubToken= # leave this empty, and setup an env. var. named ORG_GRADLE_PROJECT_githubToken
 githubOwner=username
 githubRepo=https://github.com/org/project
 bintrayUser=username
-bintrayKey=BINTRAY_TOKEN
+bintrayKey= # leave this empty, and setup an env. var. named ORG_GRADLE_PROJECT_bintrayKey
 bintrayRepo=bintray-repo-name
 bintrayUserOrg=bintray-org-name
 projectHomepage=CUSTOM_PROJECT_HOMEPAGE
@@ -39,12 +41,12 @@ projectLicense=Apache-2.0  # (default)
 projectLicenseUrl=https://www.apache.org/licenses/LICENSE-2.0 # (default)
 mavenRepo=https://oss.sonatype.org/service/local/staging/deploy/maven2/ #(default)
 mavenUsername=username
-mavenPassword=MAVEN_REPO_PASSWORD
+mavenPassword= # leave this empty, and setup an env. var. named ORG_GRADLE_PROJECT_mavenPassword
 scmUrl=https://github.com/org/project
 scmConnection=git@github.com:org/password.git
 signingKey= # leave this empty, and setup an env. var. named ORG_GRADLE_PROJECT_signingKey
 signingPassword= # leave this empty, and setup an env. var. named ORG_GRADLE_PROJECT_signingPassword
-npmToken=NPM_TOKEN
+npmToken= # leave this empty, and setup an env. var. named ORG_GRADLE_PROJECT_npmToken
 issuesUrl=https://github.com/org/project/issues
 issuesEmail=name.surname@example.com
 
