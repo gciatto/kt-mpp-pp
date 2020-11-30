@@ -111,6 +111,7 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
     }
 
     private fun Project.configureAllProjects() {
+        repositories.add(rootProject.repositories.gradlePluginPortal())
         repositories.add(rootProject.repositories.mavenCentral())
         configureTestResultPrinting()
     }
