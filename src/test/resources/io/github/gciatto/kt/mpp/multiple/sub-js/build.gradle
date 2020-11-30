@@ -1,0 +1,9 @@
+kotlin {
+    sourceSets {
+        main {
+            dependencies {
+                api(npm("antlr4", "4.8.0"))
+            }
+        }
+    }
+}

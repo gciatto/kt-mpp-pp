@@ -1,0 +1,14 @@
+kotlin {
+    sourceSets {
+        jvmMain {
+            dependencies {
+                api("org.antlr:antlr4-runtime:4.8-1")
+            }
+        }
+        jsMain {
+            dependencies {
+                api(npm("antlr4", "4.8.0"))
+            }
+        }
+    }
+}

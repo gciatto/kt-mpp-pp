@@ -158,17 +158,17 @@ object ProjectConfiguration {
 
     fun Project.configureSigning() {
         configure<SigningExtension> {
-            useInMemoryPgpKeys(ktMpp.signingKey.orNull, ktMpp.signingPassword.orNull)
-            configure<PublishingExtension> {
-                sign(publications)
-            }
-        }
-        configure<PublishingExtension> {
-            val pubs = publications.withType(MavenPublication::class.java).map {
-                "sign${it.name.capitalize()}Publication"
-            }
-            tasks.create<Sign>("signAllPublications") {
-                dependsOn(*pubs.toTypedArray())
+            if (arrayOf(ktMpp.signingKey, ktMpp.signingPassword).all { it.isPresent && it.get().isNotBlank() }) {
+                useInMemoryPgpKeys(ktMpp.signingKey.get(), ktMpp.signingPassword.get())
+                configure<PublishingExtension> {
+                    sign(publications)
+                    val pubs = publications.withType(MavenPublication::class.java).map {
+                        "sign${it.name.capitalize()}Publication"
+                    }
+                    tasks.create<Sign>("signAllPublications") {
+                        dependsOn(*pubs.toTypedArray())
+                    }
+                }
             }
         }
     }
@@ -205,7 +205,7 @@ object ProjectConfiguration {
     }
 
     fun Project.configureUploadToMavenCentral() {
-        if (ktMpp.mavenUsername.isPresent && ktMpp.mavenPassword.isPresent) {
+        if (arrayOf(ktMpp.mavenUsername, ktMpp.mavenPassword).all { it.isPresent && it.get().isNotBlank() }) {
             configure<PublishingExtension> {
                 repositories { repos ->
                     repos.maven(ktMpp.mavenRepo.get()) {
@@ -229,6 +229,7 @@ object ProjectConfiguration {
         configure<PublishingExtension> {
             publications.create<MavenPublication>(name) {
                 val pubName = this.name
+
                 groupId = project.group.toString()
                 version = project.version.toString()
 
@@ -260,7 +261,7 @@ object ProjectConfiguration {
 
     fun Project.configureMavenPublications(docArtifactBaseName: String) {
         configure<PublishingExtension> {
-            publications.withType(MavenPublication::class.java) { pub ->
+            publications.withType(MavenPublication::class.java).configureEach { pub ->
                 pub.groupId = project.group.toString()
                 pub.version = project.version.toString()
 

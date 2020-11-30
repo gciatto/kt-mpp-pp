@@ -1,0 +1,5 @@
+rootProject.name = "test-multiple"
+
+include 'sub-jvm'
+include 'sub-js'
+include 'sub-kt'

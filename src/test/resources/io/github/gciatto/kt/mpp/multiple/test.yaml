@@ -1,0 +1,6 @@
+tests:
+  - description: "Multi-project MPP builds just requires the plugin to be imported"
+    configuration:
+      tasks: help
+    expectation:
+      success: help

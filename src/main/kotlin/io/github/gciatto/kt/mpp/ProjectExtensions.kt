@@ -20,28 +20,24 @@ object ProjectExtensions {
 
     val Project.jvmProjects: Sequence<Project>
         get() {
-            if (this != rootProject) error("jvmProjects property is only defined for the root project")
             val jvmProjectNames = ktMpp.jvmProjects.getOrElse(emptySet())
             return allprojects.asSequence().filter { it.name in jvmProjectNames }
         }
 
     val Project.jsProjects: Sequence<Project>
         get() {
-            if (this != rootProject) error("jsProjects property is only defined for the root project")
             val jsProjectNames = ktMpp.jsProjects.getOrElse(emptySet())
             return allprojects.asSequence().filter { it.name in jsProjectNames }
         }
 
     val Project.otherProjects: Sequence<Project>
         get() {
-            if (this != rootProject) error("otherProjects property is only defined for the root project")
             val otherProjectNames = ktMpp.otherProjects.getOrElse(emptySet())
             return allprojects.asSequence().filter { it.name in otherProjectNames }
         }
 
     val Project.ktProjects: Sequence<Project>
         get() {
-            if (this != rootProject) error("ktProjects property is only defined for the root project")
             val nonKtProjectsName = setOf(ktMpp.jvmProjects, ktMpp.jsProjects, ktMpp.otherProjects)
                     .flatMap { it.getOrElse(emptySet()) }
                     .toSet()

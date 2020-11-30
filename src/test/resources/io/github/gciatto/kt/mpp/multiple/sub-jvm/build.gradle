@@ -1,0 +1,9 @@
+kotlin {
+    sourceSets {
+        main {
+            dependencies {
+                api("org.antlr:antlr4-runtime:4.8-1")
+            }
+        }
+    }
+}
