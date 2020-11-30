@@ -15,7 +15,6 @@ import io.github.gciatto.kt.node.NpmPublishExtension
 import io.github.gciatto.kt.node.PackageJson
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.bundling.Jar
