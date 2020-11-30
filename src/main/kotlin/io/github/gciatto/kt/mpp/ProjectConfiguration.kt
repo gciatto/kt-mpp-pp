@@ -279,7 +279,7 @@ object ProjectConfiguration {
             }
 
             pom.developers { developers ->
-                project.ktMpp.developers.get().forEach { developer ->
+                project.ktMpp.developers.all { developer ->
                     developers.developer { dev ->
                         dev.name.set(developer.name)
                         dev.email.set(developer.email)
@@ -312,7 +312,7 @@ object ProjectConfiguration {
             defaultValuesFrom(project)
             token.set(ktMpp.npmToken.get())
             liftPackageJson {
-                it.people = ktMpp.developers.get().map(Developer::toNpmPeople).toMutableList()
+                it.people = ktMpp.developers.map(Developer::toNpmPeople).toMutableList()
                 // TODO support description
                 it.homepage = ktMpp.projectHomepage.get()
                 it.bugs = Bugs(ktMpp.issuesUrl.get(), ktMpp.issuesEmail.get())

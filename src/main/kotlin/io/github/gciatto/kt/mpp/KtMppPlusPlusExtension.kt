@@ -1,9 +1,9 @@
 package io.github.gciatto.kt.mpp
 
+import org.gradle.api.DomainObjectSet
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.model.ObjectFactory
-import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.SetProperty
 import org.gradle.kotlin.dsl.property
@@ -57,7 +57,7 @@ open class KtMppPlusPlusExtension(objects: ObjectFactory) {
 
     val ktFreeCompilerArgsJvm: Property<String> = objects.property()
 
-    val developers: ListProperty<Developer> = objects.listProperty(Developer::class.java)
+    val developers: DomainObjectSet<Developer> = objects.domainObjectSet(Developer::class.java)
 
     val mavenRepo: Property<String> = objects.property()
 
