@@ -47,4 +47,7 @@ object ProjectExtensions {
                     .toSet()
             return allprojects.asSequence().filter { it.name !in nonKtProjectsName }
         }
+
+    val Project.isMultiProject: Boolean
+        get() = (jvmProjects + jsProjects).any()
 }
