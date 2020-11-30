@@ -18,9 +18,17 @@ object ProjectUtils {
     }
 
     fun Project.getPropertyOrWarnForAbsence(key: String): String? {
-        val value = property(key)?.toString()
+        val value = findProperty(key)?.toString()
         if (value.isNullOrBlank()) {
             warn("$key is not set")
+        }
+        return value
+    }
+
+    fun Project.getPropertyOrDefault(key: String, default: Any): String {
+        val value = findProperty(key)?.toString()
+        if (value.isNullOrBlank()) {
+            return default.toString()
         }
         return value
     }

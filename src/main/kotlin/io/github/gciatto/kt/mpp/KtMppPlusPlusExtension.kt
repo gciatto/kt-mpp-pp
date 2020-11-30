@@ -1,7 +1,7 @@
 package io.github.gciatto.kt.mpp
 
-import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.AUTOMATICALLY_CONFIGURE_PROJECTS
 import org.gradle.api.JavaVersion
+import org.gradle.api.Project
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
@@ -18,6 +18,7 @@ open class KtMppPlusPlusExtension(objects: ObjectFactory) {
             const val MOCHA_TIMEOUT = 60_000L // ms
             const val KT_FREE_COMPILER_ARGS_JVM = "-Xjvm-default=enable"
             const val AUTOMATICALLY_CONFIGURE_PROJECTS = true
+            const val MAVEN_REPO = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
         }
     }
 
@@ -88,10 +89,29 @@ open class KtMppPlusPlusExtension(objects: ObjectFactory) {
     fun org(name: String, url: String) =
             Organization(name, url)
 
+    fun jvmOnlyProjects(vararg names: String) =
+            jvmProjects.addAll(*names)
+
+    fun jsOnlyProjects(vararg names: String) =
+            jsProjects.addAll(*names)
+
+    fun otherProjects(vararg names: String) =
+            otherProjects.addAll(*names)
+
+    fun jvmOnlyProjects(vararg projects: Project) =
+            jvmProjects.addAll(listOf(*projects).map { it.name })
+
+    fun jsOnlyProjects(vararg projects: Project) =
+            jsProjects.addAll(listOf(*projects).map { it.name })
+
+    fun otherProjects(vararg projects: Project) =
+            otherProjects.addAll(listOf(*projects).map { it.name })
+
     init {
         javaVersion.set(Defaults.JAVA_VERSION)
         mochaTimeout.set(Defaults.MOCHA_TIMEOUT)
         ktFreeCompilerArgsJvm.set(Defaults.KT_FREE_COMPILER_ARGS_JVM)
-        automaticallyConfigureProjects.set(AUTOMATICALLY_CONFIGURE_PROJECTS)
+        automaticallyConfigureProjects.set(Defaults.AUTOMATICALLY_CONFIGURE_PROJECTS)
+        mavenRepo.set(Defaults.MAVEN_REPO)
     }
 }

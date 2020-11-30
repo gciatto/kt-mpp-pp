@@ -3,6 +3,9 @@ package io.github.gciatto.kt.mpp
 import com.github.breadmoirai.githubreleaseplugin.GithubReleasePlugin
 import com.jfrog.bintray.gradle.BintrayPlugin
 import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.AUTOMATICALLY_CONFIGURE_PROJECTS
+import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.KT_FREE_COMPILER_ARGS_JVM
+import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.MAVEN_REPO
+import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.MOCHA_TIMEOUT
 import io.github.gciatto.kt.mpp.ProjectConfiguration.configureDokka
 import io.github.gciatto.kt.mpp.ProjectConfiguration.configureNpmPublishing
 import io.github.gciatto.kt.mpp.ProjectConfiguration.configureKtLint
@@ -16,6 +19,7 @@ import io.github.gciatto.kt.mpp.ProjectConfiguration.createMavenPublications
 import io.github.gciatto.kt.mpp.ProjectExtensions.isJsProject
 import io.github.gciatto.kt.mpp.ProjectExtensions.isJvmProject
 import io.github.gciatto.kt.mpp.ProjectExtensions.isOtherProject
+import io.github.gciatto.kt.mpp.ProjectUtils.getPropertyOrDefault
 import io.github.gciatto.kt.mpp.ProjectUtils.getPropertyOrWarnForAbsence
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -84,9 +88,15 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
             signingKey.set(getPropertyOrWarnForAbsence("signingKey"))
             signingPassword.set(getPropertyOrWarnForAbsence("signingPassword"))
             npmToken.set(getPropertyOrWarnForAbsence("npmToken"))
-            npmOrganization.set(getPropertyOrWarnForAbsence("npmOrganization"))
+            findProperty("npmOrganization")?.let {
+                npmOrganization.set(it.toString())
+            }
             issuesUrl.set(getPropertyOrWarnForAbsence("issuesUrl"))
             issuesEmail.set(getPropertyOrWarnForAbsence("issuesEmail"))
+
+            mochaTimeout.set(getPropertyOrDefault("javaVersion", MOCHA_TIMEOUT).toLong())
+            ktFreeCompilerArgsJvm.set(getPropertyOrDefault("ktFreeCompilerArgsJvm", KT_FREE_COMPILER_ARGS_JVM))
+            mavenRepo.set(getPropertyOrDefault("mavenRepo", MAVEN_REPO))
         }
     }
 
