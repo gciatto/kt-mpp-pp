@@ -12,6 +12,7 @@ import io.github.gciatto.kt.mpp.ProjectUtils.log
 import io.github.gciatto.kt.mpp.ProjectUtils.warn
 import io.github.gciatto.kt.node.Bugs
 import io.github.gciatto.kt.node.NpmPublishExtension
+import io.github.gciatto.kt.node.NpmPublishPlugin
 import io.github.gciatto.kt.node.PackageJson
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
@@ -315,8 +316,10 @@ object ProjectConfiguration {
     }
 
     fun Project.configureNpmPublishing() {
-        if (project == rootProject) return
-
+        if (project == rootProject && ktMpp.preventPublishingOfRootProject.get()) {
+            return
+        }
+        apply<NpmPublishPlugin>()
         configure<NpmPublishExtension> {
             defaultValuesFrom(project)
             token.set(ktMpp.npmToken.get())

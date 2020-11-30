@@ -18,9 +18,12 @@ open class KtMppPlusPlusExtension(objects: ObjectFactory) {
             const val MOCHA_TIMEOUT = 60_000L // ms
             const val KT_FREE_COMPILER_ARGS_JVM = "-Xjvm-default=enable"
             const val AUTOMATICALLY_CONFIGURE_PROJECTS = true
+            const val PREVENT_PUBLISHING_OF_ROOT_PROJECT = false
             const val MAVEN_REPO = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
         }
     }
+
+    val preventPublishingOfRootProject: Property<Boolean> = objects.property()
 
     val automaticallyConfigureProjects: Property<Boolean> = objects.property()
 
@@ -113,5 +116,6 @@ open class KtMppPlusPlusExtension(objects: ObjectFactory) {
         ktFreeCompilerArgsJvm.set(Defaults.KT_FREE_COMPILER_ARGS_JVM)
         automaticallyConfigureProjects.set(Defaults.AUTOMATICALLY_CONFIGURE_PROJECTS)
         mavenRepo.set(Defaults.MAVEN_REPO)
+        preventPublishingOfRootProject.set(Defaults.PREVENT_PUBLISHING_OF_ROOT_PROJECT)
     }
 }
