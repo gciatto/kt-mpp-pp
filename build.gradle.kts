@@ -23,8 +23,8 @@ group = "io.github.gciatto"
 description = "A Gradle plugin easing the configuration Kotlin Multiplaftorm projects"
 inner class PluginInfo {
     val longName = "Set up Kotlin MPP projects via Gradle"
-    val website = "https://github.com/gciatto/kt-mpp++"
-    val scm = "git@github.com:gciatto/kt-mpp++.git"
+    val website = "https://github.com/gciatto/kt-mpp-pp"
+    val scm = "git@github.com:gciatto/kt-mpp-pp.git"
     val pluginImplementationClass = "$group.kt.mpp.KtMppPlusPlusPlugin"
     val tags = listOf("kotlin", "multi plaftorm", "mpp", "gradle")
     val license = "Apache 2.0"
