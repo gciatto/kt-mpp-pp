@@ -262,13 +262,13 @@ object ProjectConfiguration {
 
     fun MavenPublication.configurePom(project: Project) {
         pom { pom ->
-            val moduleName = project.name.split('-').map { it.capitalize() }.joinToString(" ")
             val pomName = project.ktMpp.projectLongName.get() + if (project.isMultiProject) {
-                " -- Module `$moduleName`"
+                " -- Module `${project.name}`"
             } else {
                 ""
             }
             pom.name.set(pomName)
+            pom.description.set(project.description)
             pom.url.set(project.ktMpp.projectHomepage.get())
             pom.licenses { licenses ->
                 licenses.license {
