@@ -12,3 +12,11 @@ kotlin {
         }
     }
 }
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            println("${groupId}:${project.name}:${version}")
+        }
+    }
+}

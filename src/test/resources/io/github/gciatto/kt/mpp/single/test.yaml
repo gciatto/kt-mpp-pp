@@ -3,4 +3,6 @@ tests:
     configuration:
       tasks: help
     expectation:
+      output_contains:
+        - org.example:test-single:1.0.0
       success: help

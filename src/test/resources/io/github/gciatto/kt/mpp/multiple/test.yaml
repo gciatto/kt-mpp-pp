@@ -3,4 +3,9 @@ tests:
     configuration:
       tasks: help
     expectation:
+      output_contains:
+        - org.example:test-multiple:1.0.0
+        - org.example:sub-js:1.0.0
+        - org.example:sub-jvm:1.0.0
+        - org.example:sub-kt:1.0.0
       success: help

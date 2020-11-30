@@ -111,11 +111,7 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
     }
 
     private fun Project.configureAllProjects() {
-        group = rootProject.group
-        version = rootProject.version
-
-        repositories.addAll(rootProject.repositories)
-
+        repositories.add(rootProject.repositories.mavenCentral())
         configureTestResultPrinting()
     }
 

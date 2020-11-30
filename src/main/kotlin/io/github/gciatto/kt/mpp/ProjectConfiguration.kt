@@ -9,7 +9,6 @@ import com.jfrog.bintray.gradle.tasks.BintrayUploadTask
 import io.github.gciatto.kt.mpp.ProjectExtensions.isMultiProject
 import io.github.gciatto.kt.mpp.ProjectExtensions.ktMpp
 import io.github.gciatto.kt.mpp.ProjectUtils.docDir
-import io.github.gciatto.kt.mpp.ProjectUtils.log
 import io.github.gciatto.kt.mpp.ProjectUtils.warn
 import io.github.gciatto.kt.node.Bugs
 import io.github.gciatto.kt.node.NpmPublishExtension
@@ -229,10 +228,6 @@ object ProjectConfiguration {
         configure<PublishingExtension> {
             publications.create<MavenPublication>(name) {
                 val pubName = this.name
-
-                groupId = project.group.toString()
-                version = project.version.toString()
-
                 for (component in componentsStrings) {
                     if (component in components.names) {
                         from(components[component])
@@ -240,20 +235,12 @@ object ProjectConfiguration {
                         warn("Missing component $component in ${project.name} for publication $pubName")
                     }
                 }
-
                 if (docArtifact != null && docArtifact in tasks.names) {
                     artifact(tasks.getByName(docArtifact)) {
                         it.classifier = "javadoc"
                     }
-                } else if (docArtifact == null || !docArtifact.endsWith("KotlinMultiplatform")) {
-                    log(
-                            "No javadoc artifact for publication $pubName in project ${project.name}: " +
-                                    "no such a task: $docArtifact"
-                    )
                 }
-
                 artifact(sourcesJar)
-
                 configurePom(project)
             }
         }
@@ -262,20 +249,12 @@ object ProjectConfiguration {
     fun Project.configureMavenPublications(docArtifactBaseName: String) {
         configure<PublishingExtension> {
             publications.withType(MavenPublication::class.java).configureEach { pub ->
-                pub.groupId = project.group.toString()
-                pub.version = project.version.toString()
-
                 val docArtifact = "${docArtifactBaseName}${pub.name.capitalize()}"
-
                 if (docArtifact in tasks.names) {
                     pub.artifact(tasks.getByName(docArtifact)) {
                         it.classifier = "javadoc"
                     }
-                } else if (!docArtifact.endsWith("KotlinMultiplatform")) {
-                    log("No javadoc artifact for publication ${pub.name} in project ${project.name}: " +
-                            "no such a task: $docArtifact")
                 }
-
                 pub.configurePom(project)
             }
         }

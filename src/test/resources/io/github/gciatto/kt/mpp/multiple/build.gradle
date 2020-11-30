@@ -10,9 +10,22 @@ repositories {
     mavenCentral()
 }
 
+subprojects {
+    group = rootProject.group
+    version = rootProject.version
+}
+
 kotlinMultiplatform {
     developer("Giovanni Ciatto", "giovanni.ciatto@gmail.com", "http://about.me/gciatto")
 
     jvmOnlyProjects("sub-jvm")
     jsOnlyProjects("sub-js")
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            println("${groupId}:${project.name}:${version}")
+        }
+    }
 }
