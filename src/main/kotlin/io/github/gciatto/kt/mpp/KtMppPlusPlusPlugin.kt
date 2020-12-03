@@ -2,7 +2,9 @@ package io.github.gciatto.kt.mpp
 
 import com.github.breadmoirai.githubreleaseplugin.GithubReleasePlugin
 import com.jfrog.bintray.gradle.BintrayPlugin
+import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.AUTOMATICALLY_CONFIGURE_CURRENT_PROJECT
 import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.AUTOMATICALLY_CONFIGURE_PROJECTS
+import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.AUTOMATICALLY_CONFIGURE_SUBPROJECTS
 import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.KT_FREE_COMPILER_ARGS_JVM
 import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.MAVEN_REPO
 import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.MOCHA_TIMEOUT
@@ -19,6 +21,7 @@ import io.github.gciatto.kt.mpp.ProjectConfiguration.createMavenPublications
 import io.github.gciatto.kt.mpp.ProjectExtensions.isJsProject
 import io.github.gciatto.kt.mpp.ProjectExtensions.isJvmProject
 import io.github.gciatto.kt.mpp.ProjectExtensions.isOtherProject
+import io.github.gciatto.kt.mpp.ProjectExtensions.ktMpp
 import io.github.gciatto.kt.mpp.ProjectUtils.getPropertyOrDefault
 import io.github.gciatto.kt.mpp.ProjectUtils.getPropertyOrWarnForAbsence
 import org.gradle.api.Plugin
@@ -37,7 +40,6 @@ import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByName
 import org.gradle.kotlin.dsl.kotlin
 import org.gradle.kotlin.dsl.withType
-import org.gradle.kotlin.dsl.create
 import org.gradle.plugins.signing.SigningPlugin
 import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
 import org.jetbrains.dokka.gradle.DokkaPlugin
@@ -58,11 +60,18 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
 
     override fun apply(target: Project) {
         extension = target.extensions.create(KtMppPlusPlusExtension.NAME, KtMppPlusPlusExtension::class.java)
+        if (target != target.rootProject) {
+            extension.copyPropertyValuesFrom(target.rootProject.ktMpp)
+        }
         target.loadDefaultsFromProperties()
         if (extension.automaticallyConfigureProjects.getOrElse(AUTOMATICALLY_CONFIGURE_PROJECTS)) {
-            target.configureProject()
-            target.subprojects {
-                it.apply<KtMppPlusPlusPlugin>()
+            if (extension.automaticallyConfigureCurrentProject.getOrElse(AUTOMATICALLY_CONFIGURE_CURRENT_PROJECT)) {
+                target.configureProject()
+            }
+            if (extension.automaticallyConfigureSubprojects.getOrElse(AUTOMATICALLY_CONFIGURE_SUBPROJECTS)) {
+                target.subprojects {
+                    it.apply<KtMppPlusPlusPlugin>()
+                }
             }
         }
     }
@@ -101,7 +110,7 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
         }
     }
 
-    private fun Project.configureProject() {
+    public fun Project.configureProject() {
         when {
             this == rootProject -> configureRootProject()
             isJvmProject -> configureJvmProject()

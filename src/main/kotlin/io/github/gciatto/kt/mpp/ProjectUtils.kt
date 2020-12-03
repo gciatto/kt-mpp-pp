@@ -17,10 +17,13 @@ object ProjectUtils {
         System.err.println("WARNING: $message")
     }
 
+    private val alreadyWarned: MutableSet<String> = hashSetOf()
+
     fun Project.getPropertyOrWarnForAbsence(key: String): String? {
         val value = findProperty(key)?.toString()
-        if (value.isNullOrBlank()) {
+        if (value.isNullOrBlank() && key !in alreadyWarned) {
             warn("$key is not set")
+            alreadyWarned += key
         }
         return value
     }

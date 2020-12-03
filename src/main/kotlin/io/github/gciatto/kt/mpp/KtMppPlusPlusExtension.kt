@@ -18,6 +18,8 @@ open class KtMppPlusPlusExtension(objects: ObjectFactory) {
             const val MOCHA_TIMEOUT = 60_000L // ms
             const val KT_FREE_COMPILER_ARGS_JVM = "-Xjvm-default=enable"
             const val AUTOMATICALLY_CONFIGURE_PROJECTS = true
+            const val AUTOMATICALLY_CONFIGURE_CURRENT_PROJECT = true
+            const val AUTOMATICALLY_CONFIGURE_SUBPROJECTS = true
             const val PREVENT_PUBLISHING_OF_ROOT_PROJECT = false
             const val MAVEN_REPO = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
         }
@@ -26,6 +28,10 @@ open class KtMppPlusPlusExtension(objects: ObjectFactory) {
     val preventPublishingOfRootProject: Property<Boolean> = objects.property()
 
     val automaticallyConfigureProjects: Property<Boolean> = objects.property()
+
+    val automaticallyConfigureCurrentProject: Property<Boolean> = objects.property()
+
+    val automaticallyConfigureSubprojects: Property<Boolean> = objects.property()
 
     val projectLongName: Property<String> = objects.property()
 
@@ -117,7 +123,47 @@ open class KtMppPlusPlusExtension(objects: ObjectFactory) {
         mochaTimeout.set(Defaults.MOCHA_TIMEOUT)
         ktFreeCompilerArgsJvm.set(Defaults.KT_FREE_COMPILER_ARGS_JVM)
         automaticallyConfigureProjects.set(Defaults.AUTOMATICALLY_CONFIGURE_PROJECTS)
+        automaticallyConfigureCurrentProject.set(Defaults.AUTOMATICALLY_CONFIGURE_CURRENT_PROJECT)
+        automaticallyConfigureSubprojects.set(Defaults.AUTOMATICALLY_CONFIGURE_SUBPROJECTS)
         mavenRepo.set(Defaults.MAVEN_REPO)
         preventPublishingOfRootProject.set(Defaults.PREVENT_PUBLISHING_OF_ROOT_PROJECT)
+    }
+
+    fun copyPropertyValuesFrom(other: KtMppPlusPlusExtension) {
+        preventPublishingOfRootProject.set(other.preventPublishingOfRootProject)
+        automaticallyConfigureProjects.set(other.automaticallyConfigureProjects)
+        automaticallyConfigureCurrentProject.set(other.automaticallyConfigureCurrentProject)
+        automaticallyConfigureSubprojects.set(other.automaticallyConfigureSubprojects)
+        projectLongName.set(other.projectLongName)
+        projectDescription.set(other.projectDescription)
+        githubToken.set(other.githubToken)
+        githubOwner.set(other.githubOwner)
+        githubRepo.set(other.githubRepo)
+        bintrayUser.set(other.bintrayUser)
+        bintrayKey.set(other.bintrayKey)
+        bintrayRepo.set(other.bintrayRepo)
+        bintrayUserOrg.set(other.bintrayUserOrg)
+        projectHomepage.set(other.projectHomepage)
+        projectLicense.set(other.projectLicense)
+        projectLicenseUrl.set(other.projectLicenseUrl)
+        mochaTimeout.set(other.mochaTimeout)
+        javaVersion.set(other.javaVersion)
+        ktFreeCompilerArgsJvm.set(other.ktFreeCompilerArgsJvm)
+        developers.clear()
+        developers.addAll(other.developers)
+        mavenRepo.set(other.mavenRepo)
+        mavenUsername.set(other.mavenUsername)
+        mavenPassword.set(other.mavenPassword)
+        scmUrl.set(other.scmUrl)
+        scmConnection.set(other.scmConnection)
+        signingKey.set(other.signingKey)
+        signingPassword.set(other.signingPassword)
+        npmToken.set(other.npmToken)
+        npmOrganization.set(other.npmOrganization)
+        issuesUrl.set(other.issuesUrl)
+        issuesEmail.set(other.issuesEmail)
+        jsProjects.set(other.jsProjects)
+        jvmProjects.set(other.jvmProjects)
+        otherProjects.set(other.otherProjects)
     }
 }

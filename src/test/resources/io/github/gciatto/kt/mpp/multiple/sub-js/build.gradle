@@ -1,4 +1,7 @@
 kotlin {
+
+    println(it.class.simpleName)
+
     sourceSets {
         main {
             dependencies {

@@ -8,4 +8,7 @@ tests:
         - org.example:sub-js:1.0.0
         - org.example:sub-jvm:1.0.0
         - org.example:sub-kt:1.0.0
+        - KotlinMultiplatformExtension_Decorated
+        - KotlinJvmProjectExtension_Decorated
+        - KotlinjsProjectExtension_Decorated
       success: help
