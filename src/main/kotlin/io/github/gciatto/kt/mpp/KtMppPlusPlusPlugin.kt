@@ -53,25 +53,41 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformJvmPlugin
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsTargetDsl
 import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
+import io.github.gciatto.kt.mpp.ProjectUtils.log
 
 class KtMppPlusPlusPlugin : Plugin<Project> {
 
     private lateinit var extension: KtMppPlusPlusExtension
 
     override fun apply(target: Project) {
-        extension = target.extensions.create(KtMppPlusPlusExtension.NAME, KtMppPlusPlusExtension::class.java)
-        if (target != target.rootProject) {
+        extension = target.extensions.create(
+                KtMppPlusPlusExtension.NAME,
+                KtMppPlusPlusExtension::class.java,
+                target.objects,
+                { projectType: ProjectType -> target.configureProject(projectType) }
+        )
+        if (target == target.rootProject) {
+            target.loadDefaultsFromProperties()
+            extension.projectType = ProjectType.KT
+        } else {
             extension.copyPropertyValuesFrom(target.rootProject.ktMpp)
+            target.loadDefaultsFromProperties()
         }
-        target.loadDefaultsFromProperties()
-        if (extension.automaticallyConfigureProjects.getOrElse(AUTOMATICALLY_CONFIGURE_PROJECTS)) {
-            if (extension.automaticallyConfigureCurrentProject.getOrElse(AUTOMATICALLY_CONFIGURE_CURRENT_PROJECT)) {
-                target.configureProject()
+        if (extension.automaticallyConfigureSubprojects.getOrElse(AUTOMATICALLY_CONFIGURE_SUBPROJECTS)) {
+            target.subprojects {
+                it.configureSubproject()
             }
-            if (extension.automaticallyConfigureSubprojects.getOrElse(AUTOMATICALLY_CONFIGURE_SUBPROJECTS)) {
-                target.subprojects {
-                    it.apply<KtMppPlusPlusPlugin>()
-                }
+        }
+    }
+
+    private fun Project.configureSubproject() {
+        apply<KtMppPlusPlusPlugin>()
+        configure<KtMppPlusPlusExtension> {
+            when {
+                isJvmProject -> projectType = ProjectType.JVM
+                isJsProject -> projectType = ProjectType.JS
+                isOtherProject -> projectType = ProjectType.OTHER
+                else -> projectType = ProjectType.KT
             }
         }
     }
@@ -110,13 +126,15 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
         }
     }
 
-    public fun Project.configureProject() {
-        when {
-            this == rootProject -> configureRootProject()
-            isJvmProject -> configureJvmProject()
-            isJsProject -> configureJsProject()
-            isOtherProject -> configureOtherProject()
-            else -> configureKtProject()
+    private fun Project.configureProject(projectType: ProjectType) {
+        when(this) {
+            rootProject -> configureRootProject()
+            else -> when (projectType) {
+                ProjectType.JVM -> configureJvmProject()
+                ProjectType.JS -> configureJsProject()
+                ProjectType.OTHER -> configureOtherProject()
+                ProjectType.KT -> configureKtProject()
+            }
         }
     }
 
@@ -244,14 +262,13 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
     }
 
     private fun Project.configureKtProject() {
+        log("Auto-configure project `$name` as Kt project")
         configureAllProjects()
-
         apply(plugin = "org.jetbrains.kotlin.multiplatform")
         apply<MavenPublishPlugin>()
         apply<SigningPlugin>()
         apply<DokkaPlugin>()
         apply<BintrayPlugin>()
-
         configureMultiplatform()
         configureKtLint()
         configureDokka("jvm", "js")
@@ -265,15 +282,14 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
     }
 
     private fun Project.configureJvmProject() {
+        log("Auto-configure project `$name` as JVM project")
         configureAllProjects()
-
         apply<KotlinPlatformJvmPlugin>()
         apply<JavaLibraryPlugin>()
         apply<MavenPublishPlugin>()
         apply<SigningPlugin>()
         apply<DokkaPlugin>()
         apply<BintrayPlugin>()
-
         configureJvm()
         configureKtLint()
         configureDokka()
@@ -285,8 +301,8 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
     }
 
     private fun Project.configureJsProject() {
+        log("Auto-configure project `$name` as JS project")
         configureAllProjects()
-
         apply<KotlinPlatformJsPlugin>()
         apply<MavenPublishPlugin>()
         apply<SigningPlugin>()
@@ -327,12 +343,12 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
     }
 
     private fun Project.configureOtherProject() {
+        log("Auto-configure project `$name` as other project")
         configureAllProjects()
     }
 
     private fun Project.configureRootProject() {
         apply<GithubReleasePlugin>()
-
         configureKtProject()
         configureDokkaMultiModule()
     }
