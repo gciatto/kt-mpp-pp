@@ -19,6 +19,7 @@ kotlinMultiplatform {
 
     jvmOnlyProjects("sub-jvm")
     jsOnlyProjects("sub-js")
+    ktProjects(allOtherSubprojects)
 }
 
 publishing {

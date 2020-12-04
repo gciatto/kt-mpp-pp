@@ -100,11 +100,13 @@ open class KtMppPlusPlusExtension(
 
     val issuesEmail: Property<String> = objects.property()
 
-    val jsProjects: SetProperty<String> = objects.setProperty(String::class.java)
+    val ktProjects: DomainObjectSet<String> = objects.domainObjectSet(String::class.java)
 
-    val jvmProjects: SetProperty<String> = objects.setProperty(String::class.java)
+    val jsProjects: DomainObjectSet<String> = objects.domainObjectSet(String::class.java)
 
-    val otherProjects: SetProperty<String> = objects.setProperty(String::class.java)
+    val jvmProjects: DomainObjectSet<String> = objects.domainObjectSet(String::class.java)
+
+    val otherProjects: DomainObjectSet<String> = objects.domainObjectSet(String::class.java)
 
     @JvmOverloads
     fun developer(name: String, email: String, homepage: String? = null, organization: Organization? = null) =
@@ -113,14 +115,20 @@ open class KtMppPlusPlusExtension(
     fun org(name: String, url: String) =
             Organization(name, url)
 
+    fun ktProjects(vararg names: String) =
+            ktProjects.addAll(listOf(*names))
+
     fun jvmOnlyProjects(vararg names: String) =
-            jvmProjects.addAll(*names)
+            jvmProjects.addAll(listOf(*names))
 
     fun jsOnlyProjects(vararg names: String) =
-            jsProjects.addAll(*names)
+            jsProjects.addAll(listOf(*names))
 
     fun otherProjects(vararg names: String) =
-            otherProjects.addAll(*names)
+            otherProjects.addAll(listOf(*names))
+
+    fun ktProjects(vararg projects: Project) =
+            ktProjects.addAll(listOf(*projects).map { it.name })
 
     fun jvmOnlyProjects(vararg projects: Project) =
             jvmProjects.addAll(listOf(*projects).map { it.name })
@@ -130,6 +138,24 @@ open class KtMppPlusPlusExtension(
 
     fun otherProjects(vararg projects: Project) =
             otherProjects.addAll(listOf(*projects).map { it.name })
+
+    fun ktProjects(projects: Iterable<Project>) =
+            ktProjects.addAll(projects.map { it.name })
+
+    fun jvmOnlyProjects(projects: Iterable<Project>) =
+            jvmProjects.addAll(projects.map { it.name })
+
+    fun jsOnlyProjects(projects: Iterable<Project>) =
+            jsProjects.addAll(projects.map { it.name })
+
+    fun otherProjects(projects: Iterable<Project>) =
+            otherProjects.addAll(projects.map { it.name })
+
+    val Project.allOtherSubprojects: List<Project>
+        get() {
+            val nonKtProjects = setOf(jvmProjects, jsProjects, otherProjects).flatMap { it.toSet() }
+            return subprojects.filter { it.name !in nonKtProjects }.toList()
+        }
 
     init {
         javaVersion.set(Defaults.JAVA_VERSION)
@@ -166,7 +192,6 @@ open class KtMppPlusPlusExtension(
         mochaTimeout.set(other.mochaTimeout)
         javaVersion.set(other.javaVersion)
         ktFreeCompilerArgsJvm.set(other.ktFreeCompilerArgsJvm)
-        developers.clear()
         developers.addAll(other.developers)
         mavenRepo.set(other.mavenRepo)
         mavenUsername.set(other.mavenUsername)
@@ -179,8 +204,9 @@ open class KtMppPlusPlusExtension(
         npmOrganization.set(other.npmOrganization)
         issuesUrl.set(other.issuesUrl)
         issuesEmail.set(other.issuesEmail)
-        jsProjects.set(other.jsProjects)
-        jvmProjects.set(other.jvmProjects)
-        otherProjects.set(other.otherProjects)
+        ktProjects.addAll(other.ktProjects)
+        jsProjects.addAll(other.jsProjects)
+        jvmProjects.addAll(other.jvmProjects)
+        otherProjects.addAll(other.otherProjects)
     }
 }

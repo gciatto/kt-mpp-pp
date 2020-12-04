@@ -2,28 +2,26 @@ package io.github.gciatto.kt.mpp
 
 import com.github.breadmoirai.githubreleaseplugin.GithubReleasePlugin
 import com.jfrog.bintray.gradle.BintrayPlugin
-import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.AUTOMATICALLY_CONFIGURE_CURRENT_PROJECT
-import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.AUTOMATICALLY_CONFIGURE_PROJECTS
 import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.AUTOMATICALLY_CONFIGURE_SUBPROJECTS
 import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.KT_FREE_COMPILER_ARGS_JVM
 import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.MAVEN_REPO
 import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.MOCHA_TIMEOUT
 import io.github.gciatto.kt.mpp.ProjectConfiguration.configureDokka
-import io.github.gciatto.kt.mpp.ProjectConfiguration.configureNpmPublishing
 import io.github.gciatto.kt.mpp.ProjectConfiguration.configureKtLint
 import io.github.gciatto.kt.mpp.ProjectConfiguration.configureMavenPublications
+import io.github.gciatto.kt.mpp.ProjectConfiguration.configureNpmPublishing
 import io.github.gciatto.kt.mpp.ProjectConfiguration.configureSigning
 import io.github.gciatto.kt.mpp.ProjectConfiguration.configureTestResultPrinting
 import io.github.gciatto.kt.mpp.ProjectConfiguration.configureUploadToBintray
 import io.github.gciatto.kt.mpp.ProjectConfiguration.configureUploadToGithub
 import io.github.gciatto.kt.mpp.ProjectConfiguration.configureUploadToMavenCentral
 import io.github.gciatto.kt.mpp.ProjectConfiguration.createMavenPublications
-import io.github.gciatto.kt.mpp.ProjectExtensions.isJsProject
-import io.github.gciatto.kt.mpp.ProjectExtensions.isJvmProject
-import io.github.gciatto.kt.mpp.ProjectExtensions.isOtherProject
+import io.github.gciatto.kt.mpp.ProjectExtensions.isRootProject
 import io.github.gciatto.kt.mpp.ProjectExtensions.ktMpp
 import io.github.gciatto.kt.mpp.ProjectUtils.getPropertyOrDefault
 import io.github.gciatto.kt.mpp.ProjectUtils.getPropertyOrWarnForAbsence
+import io.github.gciatto.kt.mpp.ProjectUtils.log
+import org.gradle.api.DomainObjectSet
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaLibraryPlugin
@@ -53,7 +51,6 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformJvmPlugin
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsTargetDsl
 import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
-import io.github.gciatto.kt.mpp.ProjectUtils.log
 
 class KtMppPlusPlusPlugin : Plugin<Project> {
 
@@ -66,28 +63,35 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
                 target.objects,
                 { projectType: ProjectType -> target.configureProject(projectType) }
         )
-        if (target == target.rootProject) {
+        if (target.isRootProject) {
             target.loadDefaultsFromProperties()
             extension.projectType = ProjectType.KT
+            target.configureSubprojects()
         } else {
             extension.copyPropertyValuesFrom(target.rootProject.ktMpp)
             target.loadDefaultsFromProperties()
         }
+    }
+
+    private fun Project.configureSubprojects() {
         if (extension.automaticallyConfigureSubprojects.getOrElse(AUTOMATICALLY_CONFIGURE_SUBPROJECTS)) {
-            target.subprojects {
-                it.configureSubproject()
-            }
+            configureSubprojectsOfType(ProjectType.KT) { ktProjects }
+            configureSubprojectsOfType(ProjectType.JVM) { jvmProjects }
+            configureSubprojectsOfType(ProjectType.JS) { jsProjects }
+            configureSubprojectsOfType(ProjectType.OTHER) { otherProjects }
         }
     }
 
-    private fun Project.configureSubproject() {
-        apply<KtMppPlusPlusPlugin>()
-        configure<KtMppPlusPlusExtension> {
-            when {
-                isJvmProject -> projectType = ProjectType.JVM
-                isJsProject -> projectType = ProjectType.JS
-                isOtherProject -> projectType = ProjectType.OTHER
-                else -> projectType = ProjectType.KT
+    private fun Project.configureSubprojectsOfType(
+            projectType: ProjectType,
+            projectSet: KtMppPlusPlusExtension.() -> DomainObjectSet<String>
+    ) {
+        extension.projectSet().configureEach { subprojectName ->
+            subprojects.find { it.name == subprojectName }?.let {
+                apply<KtMppPlusPlusPlugin>()
+                configure<KtMppPlusPlusExtension> {
+                    this.projectType = projectType
+                }
             }
         }
     }
@@ -114,9 +118,7 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
             signingKey.set(getPropertyOrWarnForAbsence("signingKey"))
             signingPassword.set(getPropertyOrWarnForAbsence("signingPassword"))
             npmToken.set(getPropertyOrWarnForAbsence("npmToken"))
-            findProperty("npmOrganization")?.let {
-                npmOrganization.set(it.toString())
-            }
+            findProperty("npmOrganization")?.let { npmOrganization.set(it.toString()) }
             issuesUrl.set(getPropertyOrWarnForAbsence("issuesUrl"))
             issuesEmail.set(getPropertyOrWarnForAbsence("issuesEmail"))
 
