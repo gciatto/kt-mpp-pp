@@ -26,8 +26,6 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaLibraryPlugin
 import org.gradle.api.plugins.JavaPluginExtension
-import org.gradle.api.publish.PublishingExtension
-import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.bundling.Zip
@@ -46,8 +44,6 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinJsProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformJsPlugin
-import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformJvmPlugin
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsTargetDsl
 import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
@@ -60,12 +56,11 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
         extension = target.extensions.create(
                 KtMppPlusPlusExtension.NAME,
                 KtMppPlusPlusExtension::class.java,
-                target.objects,
-                { projectType: ProjectType -> target.configureProject(projectType) }
+                target.objects
         )
         if (target.isRootProject) {
             target.loadDefaultsFromProperties()
-            extension.projectType = ProjectType.KT
+            target.configureProject(ProjectType.KT)
             target.configureSubprojects()
         } else {
             extension.copyPropertyValuesFrom(target.rootProject.ktMpp)
@@ -83,15 +78,13 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
     }
 
     private fun Project.configureSubprojectsOfType(
-            projectType: ProjectType,
-            projectSet: KtMppPlusPlusExtension.() -> DomainObjectSet<String>
+        projectType: ProjectType,
+        projectSet: KtMppPlusPlusExtension.() -> DomainObjectSet<String>
     ) {
         extension.projectSet().configureEach { subprojectName ->
             subprojects.find { it.name == subprojectName }?.let {
-                apply<KtMppPlusPlusPlugin>()
-                configure<KtMppPlusPlusExtension> {
-                    this.projectType = projectType
-                }
+                it.apply<KtMppPlusPlusPlugin>()
+                it.configureProject(projectType)
             }
         }
     }
@@ -129,8 +122,13 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
     }
 
     private fun Project.configureProject(projectType: ProjectType) {
-        when(this) {
-            rootProject -> configureRootProject()
+        when (this) {
+            rootProject -> {
+                require(projectType == ProjectType.KT) {
+                    throw IllegalStateException("Root project must be configured as Kt project")
+                }
+                configureRootProject()
+            }
             else -> when (projectType) {
                 ProjectType.JVM -> configureJvmProject()
                 ProjectType.JS -> configureJsProject()
@@ -286,7 +284,7 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
     private fun Project.configureJvmProject() {
         log("Auto-configure project `$name` as JVM project")
         configureAllProjects()
-        apply<KotlinPlatformJvmPlugin>()
+        apply(plugin = "org.jetbrains.kotlin.jvm")
         apply<JavaLibraryPlugin>()
         apply<MavenPublishPlugin>()
         apply<SigningPlugin>()
@@ -305,7 +303,7 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
     private fun Project.configureJsProject() {
         log("Auto-configure project `$name` as JS project")
         configureAllProjects()
-        apply<KotlinPlatformJsPlugin>()
+        apply(plugin = "org.jetbrains.kotlin.js")
         apply<MavenPublishPlugin>()
         apply<SigningPlugin>()
         apply<DokkaPlugin>()
@@ -328,7 +326,7 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
                 configureKtJsCompilation()
                 configureJsSourceSets()
             }
-            tasks.getByName<Jar>("sourcesJar") {
+            tasks.maybeCreate("sourcesJar", Jar::class.java).run {
                 sourceSets.forEach { sourceSet ->
                     sourceSet.kotlin.srcDirs.forEach {
                         from(it)
@@ -337,11 +335,6 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
             }
         }
         tasks.create("jsTest") { it.dependsOn("test") }
-        configure<PublishingExtension> {
-            publications.withType<MavenPublication>().getByName("js") {
-                it.from(components["kotlin"])
-            }
-        }
     }
 
     private fun Project.configureOtherProject() {

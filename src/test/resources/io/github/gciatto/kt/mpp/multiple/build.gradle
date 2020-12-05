@@ -17,9 +17,9 @@ subprojects {
 kotlinMultiplatform {
     developer("Giovanni Ciatto", "giovanni.ciatto@gmail.com", "http://about.me/gciatto")
 
+    ktProjects("sub-kt")
     jvmOnlyProjects("sub-jvm")
     jsOnlyProjects("sub-js")
-    ktProjects(allOtherSubprojects)
 }
 
 publishing {

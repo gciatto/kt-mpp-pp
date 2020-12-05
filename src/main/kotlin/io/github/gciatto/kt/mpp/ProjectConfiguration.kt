@@ -29,7 +29,6 @@ import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.maven
 import org.gradle.kotlin.dsl.KotlinClosure2
-import org.gradle.plugins.signing.Sign
 import org.gradle.plugins.signing.SigningExtension
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
@@ -161,11 +160,12 @@ object ProjectConfiguration {
                 useInMemoryPgpKeys(ktMpp.signingKey.get(), ktMpp.signingPassword.get())
                 configure<PublishingExtension> {
                     sign(publications)
-                    val pubs = publications.withType(MavenPublication::class.java).map {
-                        "sign${it.name.capitalize()}Publication"
-                    }
-                    tasks.create<Sign>("signAllPublications") {
-                        dependsOn(*pubs.toTypedArray())
+                    tasks.register("signAllPublications", DefaultTask::class.java).configure { signAllPubs ->
+                        signAllPubs.group = "sign"
+                        publications.withType(MavenPublication::class.java).configureEach {
+                            "sign${it.name.capitalize()}Publication"
+                            signAllPubs.dependsOn(signAllPubs)
+                        }
                     }
                 }
             }
@@ -218,17 +218,17 @@ object ProjectConfiguration {
         }
     }
 
-    fun Project.createMavenPublications(name: String, vararg componentsStrings: String, docArtifact: String? = null) {
-        val sourcesJar = tasks.create("sourcesJar", Jar::class) {
+    fun Project.createMavenPublications(name: String, component: String? = null, docArtifact: String? = null) {
+        val sourcesJar = tasks.maybeCreate("sourcesJar", Jar::class.java).also {
             it.archiveBaseName.set(project.name)
             it.archiveVersion.set(project.version.toString())
             it.archiveClassifier.set("sources")
         }
 
         configure<PublishingExtension> {
-            publications.create<MavenPublication>(name) {
+            publications.maybeCreate(name, MavenPublication::class.java).run {
                 val pubName = this.name
-                for (component in componentsStrings) {
+                if (component != null) {
                     if (component in components.names) {
                         from(components[component])
                     } else {

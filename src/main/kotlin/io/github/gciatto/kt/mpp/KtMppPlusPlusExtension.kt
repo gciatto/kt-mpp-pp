@@ -5,14 +5,9 @@ import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
-import org.gradle.api.provider.SetProperty
 import org.gradle.kotlin.dsl.property
-import java.lang.IllegalStateException
 
-open class KtMppPlusPlusExtension(
-        objects: ObjectFactory,
-        private val projectConfigurer: (ProjectType) -> Unit
-) {
+open class KtMppPlusPlusExtension(objects: ObjectFactory) {
 
     companion object {
         const val NAME = "kotlinMultiplatform"
@@ -21,28 +16,13 @@ open class KtMppPlusPlusExtension(
             val JAVA_VERSION = JavaVersion.VERSION_1_8
             const val MOCHA_TIMEOUT = 60_000L // ms
             const val KT_FREE_COMPILER_ARGS_JVM = "-Xjvm-default=enable"
-            const val AUTOMATICALLY_CONFIGURE_PROJECTS = true
-            const val AUTOMATICALLY_CONFIGURE_CURRENT_PROJECT = true
             const val AUTOMATICALLY_CONFIGURE_SUBPROJECTS = true
             const val PREVENT_PUBLISHING_OF_ROOT_PROJECT = false
             const val MAVEN_REPO = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
         }
     }
 
-    var projectType: ProjectType = ProjectType.OTHER
-        set(value) {
-            if (field != ProjectType.OTHER && value != field) {
-                throw IllegalStateException("Cannot change the project type from $field to $value}")
-            }
-            field = value
-            projectConfigurer(field)
-        }
-
     val preventPublishingOfRootProject: Property<Boolean> = objects.property()
-
-//    val automaticallyConfigureProjects: Property<Boolean> = objects.property()
-
-//    val automaticallyConfigureCurrentProject: Property<Boolean> = objects.property()
 
     val automaticallyConfigureSubprojects: Property<Boolean> = objects.property()
 
@@ -161,21 +141,13 @@ open class KtMppPlusPlusExtension(
         javaVersion.set(Defaults.JAVA_VERSION)
         mochaTimeout.set(Defaults.MOCHA_TIMEOUT)
         ktFreeCompilerArgsJvm.set(Defaults.KT_FREE_COMPILER_ARGS_JVM)
-//        automaticallyConfigureProjects.set(Defaults.AUTOMATICALLY_CONFIGURE_PROJECTS)
-//        automaticallyConfigureCurrentProject.set(Defaults.AUTOMATICALLY_CONFIGURE_CURRENT_PROJECT)
         automaticallyConfigureSubprojects.set(Defaults.AUTOMATICALLY_CONFIGURE_SUBPROJECTS)
         mavenRepo.set(Defaults.MAVEN_REPO)
         preventPublishingOfRootProject.set(Defaults.PREVENT_PUBLISHING_OF_ROOT_PROJECT)
     }
 
-    fun configureProject() {
-        projectConfigurer(projectType)
-    }
-
     fun copyPropertyValuesFrom(other: KtMppPlusPlusExtension) {
         preventPublishingOfRootProject.set(other.preventPublishingOfRootProject)
-//        automaticallyConfigureProjects.set(other.automaticallyConfigureProjects)
-//        automaticallyConfigureCurrentProject.set(other.automaticallyConfigureCurrentProject)
         automaticallyConfigureSubprojects.set(other.automaticallyConfigureSubprojects)
         projectLongName.set(other.projectLongName)
         projectDescription.set(other.projectDescription)

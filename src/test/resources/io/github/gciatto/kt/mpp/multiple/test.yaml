@@ -2,6 +2,7 @@ tests:
   - description: "Multi-project MPP builds just requires the plugin to be imported"
     configuration:
       tasks: help
+      options: --stacktrace
     expectation:
       output_contains:
         - org.example:test-multiple:1.0.0
@@ -10,5 +11,5 @@ tests:
         - org.example:sub-kt:1.0.0
         - KotlinMultiplatformExtension_Decorated
         - KotlinJvmProjectExtension_Decorated
-        - KotlinjsProjectExtension_Decorated
+        - KotlinJsProjectExtension_Decorated
       success: help
