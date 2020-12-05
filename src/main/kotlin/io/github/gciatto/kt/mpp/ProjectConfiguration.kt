@@ -30,6 +30,7 @@ import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.maven
 import org.gradle.kotlin.dsl.KotlinClosure2
 import org.gradle.plugins.signing.SigningExtension
+import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
 import org.jlleitschuh.gradle.ktlint.KtlintPlugin
@@ -243,6 +244,20 @@ object ProjectConfiguration {
                 artifact(sourcesJar)
                 configurePom(project)
             }
+        }
+    }
+
+    fun Project.configureDokkaMultiModule() {
+        tasks.withType(DokkaMultiModuleTask::class.java).all { dokkaHtmlMultiModule ->
+            val packDokkaMultiModule = tasks.maybeCreate("packDokkaMultiModule", Zip::class.java).also {
+                it.group = "documentation"
+                it.dependsOn(dokkaHtmlMultiModule)
+                it.from(dokkaHtmlMultiModule.outputDirectory.get())
+                it.archiveBaseName.set(project.name)
+                it.archiveVersion.set(project.version.toString())
+                it.archiveAppendix.set("documentation")
+            }
+            configureUploadToGithub(packDokkaMultiModule)
         }
     }
 

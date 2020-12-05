@@ -7,6 +7,7 @@ import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.KT_FRE
 import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.MAVEN_REPO
 import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.MOCHA_TIMEOUT
 import io.github.gciatto.kt.mpp.ProjectConfiguration.configureDokka
+import io.github.gciatto.kt.mpp.ProjectConfiguration.configureDokkaMultiModule
 import io.github.gciatto.kt.mpp.ProjectConfiguration.configureKtLint
 import io.github.gciatto.kt.mpp.ProjectConfiguration.configureMavenPublications
 import io.github.gciatto.kt.mpp.ProjectConfiguration.configureNpmPublishing
@@ -28,16 +29,13 @@ import org.gradle.api.plugins.JavaLibraryPlugin
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.api.tasks.bundling.Jar
-import org.gradle.api.tasks.bundling.Zip
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.get
-import org.gradle.kotlin.dsl.getByName
 import org.gradle.kotlin.dsl.kotlin
 import org.gradle.kotlin.dsl.withType
 import org.gradle.plugins.signing.SigningPlugin
-import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
 import org.jetbrains.dokka.gradle.DokkaPlugin
 import org.jetbrains.kotlin.gradle.dsl.KotlinJsCompile
 import org.jetbrains.kotlin.gradle.dsl.KotlinJsProjectExtension
@@ -346,20 +344,5 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
         apply<GithubReleasePlugin>()
         configureKtProject()
         configureDokkaMultiModule()
-    }
-
-    private fun Project.configureDokkaMultiModule() {
-        tasks.withType(DokkaMultiModuleTask::class.java).configureEach { dokkaHtmlMultiModule ->
-            val packDokkaMultiModule = tasks.register("packDokkaMultiModule", Zip::class.java)
-            packDokkaMultiModule.configure {
-                it.group = "documentation"
-                it.dependsOn(dokkaHtmlMultiModule)
-                it.from(dokkaHtmlMultiModule.outputDirectory.get())
-                it.archiveBaseName.set(project.name)
-                it.archiveVersion.set(project.version.toString())
-                it.archiveAppendix.set("documentation")
-            }
-            configureUploadToGithub(packDokkaMultiModule.get())
-        }
     }
 }
