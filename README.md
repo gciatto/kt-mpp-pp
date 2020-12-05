@@ -20,6 +20,7 @@ kotlinMultiplatform {
     jvmOnlyProjects("jvmOnlySuproject1", "jvmSubproject2", ...)
     jsOnlyProjects("jsOnlySuproject1", "jsSubproject2", ...)
     otherProjects("nonKtSubproject", "nonJvmProject", "nonJsProject", ...)
+    ktProjects(allOtherSubprojects)
 }
 ```
 
