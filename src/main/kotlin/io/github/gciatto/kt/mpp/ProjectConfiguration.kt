@@ -164,8 +164,7 @@ object ProjectConfiguration {
                     tasks.register("signAllPublications", DefaultTask::class.java).configure { signAllPubs ->
                         signAllPubs.group = "sign"
                         publications.withType(MavenPublication::class.java).configureEach {
-                            "sign${it.name.capitalize()}Publication"
-                            signAllPubs.dependsOn(signAllPubs)
+                            signAllPubs.dependsOn("sign${it.name.capitalize()}Publication")
                         }
                     }
                 }
