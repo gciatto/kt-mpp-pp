@@ -6,13 +6,16 @@ import com.github.breadmoirai.githubreleaseplugin.GithubReleaseExtension
 import com.github.breadmoirai.githubreleaseplugin.GithubReleaseTask
 import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.tasks.BintrayUploadTask
+import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.PREVENT_PUBLISHING_OF_ROOT_PROJECT
 import io.github.gciatto.kt.mpp.ProjectExtensions.isMultiProject
+import io.github.gciatto.kt.mpp.ProjectExtensions.isRootProject
 import io.github.gciatto.kt.mpp.ProjectExtensions.ktMpp
 import io.github.gciatto.kt.mpp.ProjectUtils.docDir
 import io.github.gciatto.kt.mpp.ProjectUtils.warn
 import io.github.gciatto.kt.node.Bugs
 import io.github.gciatto.kt.node.NpmPublishExtension
 import io.github.gciatto.kt.node.NpmPublishPlugin
+import io.github.gciatto.kt.node.NpmPublishTask
 import io.github.gciatto.kt.node.PackageJson
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
@@ -318,25 +321,30 @@ object ProjectConfiguration {
     }
 
     fun Project.configureNpmPublishing() {
-        if (project == rootProject && ktMpp.preventPublishingOfRootProject.get()) {
-            return
-        }
         apply<NpmPublishPlugin>()
-        configure<NpmPublishExtension> {
-            defaultValuesFrom(project)
-            token.set(ktMpp.npmToken.get())
-            liftPackageJson {
-                it.people = ktMpp.developers.map(Developer::toNpmPeople).toMutableList()
-                // TODO support description
-                it.homepage = ktMpp.projectHomepage.get()
-                it.bugs = Bugs(ktMpp.issuesUrl.get(), ktMpp.issuesEmail.get())
-                it.license = ktMpp.projectLicense.get()
-                it.version = it.version?.substringBefore('+')
-                liftPackageJsonToFixDependencies(it)
-                if (ktMpp.npmOrganization.isPresent) {
-                    liftPackageJsonToSetOrganization(ktMpp.npmOrganization.get(), it)
-                    liftJsSources { _, _, line ->
-                        liftJsSourcesToSetOrganization(ktMpp.npmOrganization.get(), line)
+        afterEvaluate {
+            configure<NpmPublishExtension> {
+                token.set(ktMpp.npmToken.get())
+                liftPackageJson {
+                    it.people = ktMpp.developers.map(Developer::toNpmPeople).toMutableList()
+                    // TODO support description
+                    it.homepage = ktMpp.projectHomepage.get()
+                    it.bugs = Bugs(ktMpp.issuesUrl.get(), ktMpp.issuesEmail.get())
+                    it.license = ktMpp.projectLicense.get()
+                    it.version = it.version?.substringBefore('+')
+                    liftPackageJsonToFixDependencies(it)
+                    if (ktMpp.npmOrganization.isPresent) {
+                        liftPackageJsonToSetOrganization(ktMpp.npmOrganization.get(), it)
+                        liftJsSources { _, _, line ->
+                            liftJsSourcesToSetOrganization(ktMpp.npmOrganization.get(), line)
+                        }
+                    }
+                }
+            }
+            if (isRootProject) {
+                tasks.withType(NpmPublishTask::class.java).configureEach {
+                    it.onlyIf {
+                        !ktMpp.preventPublishingOfRootProject.getOrElse(PREVENT_PUBLISHING_OF_ROOT_PROJECT)
                     }
                 }
             }
