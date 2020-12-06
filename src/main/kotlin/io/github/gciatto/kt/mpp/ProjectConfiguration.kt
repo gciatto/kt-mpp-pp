@@ -289,7 +289,6 @@ object ProjectConfiguration {
     fun MavenPublication.configurePom(project: Project) {
         project.afterEvaluate {
             groupId = project.group.toString()
-            artifactId = project.name
             version = project.version.toString()
             pom { pom ->
                 val moduleName = project.name.split('-').joinToString(" ") { it.capitalize() }
