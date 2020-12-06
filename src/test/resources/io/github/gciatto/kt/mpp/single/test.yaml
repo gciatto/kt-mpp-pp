@@ -2,7 +2,16 @@ tests:
   - description: "Single-project MPP builds just requires the plugin to be imported"
     configuration:
       tasks: help
+      options: --stacktrace
     expectation:
       output_contains:
         - org.example:test-single:1.0.0
       success: help
+  - description: "Single-project MPP builds support GitHub release"
+    configuration:
+      tasks: githubRelease
+      options: --stacktrace
+    expectation:
+#      output_contains:
+#        - org.example:test-single:1.0.0
+      failure: githubRelease

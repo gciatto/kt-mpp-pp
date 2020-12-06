@@ -8,6 +8,7 @@ import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.MAVEN_
 import io.github.gciatto.kt.mpp.KtMppPlusPlusExtension.Companion.Defaults.MOCHA_TIMEOUT
 import io.github.gciatto.kt.mpp.ProjectConfiguration.configureDokka
 import io.github.gciatto.kt.mpp.ProjectConfiguration.configureDokkaMultiModule
+import io.github.gciatto.kt.mpp.ProjectConfiguration.configureGitHubReleaseForRootProject
 import io.github.gciatto.kt.mpp.ProjectConfiguration.configureKtLint
 import io.github.gciatto.kt.mpp.ProjectConfiguration.configureMavenPublications
 import io.github.gciatto.kt.mpp.ProjectConfiguration.configureNpmPublishing
@@ -259,6 +260,25 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
         tasks.create("jvmTest") { it.dependsOn("test") }
     }
 
+    private fun Project.configureJvmProject() {
+        log("Auto-configure project `$name` as JVM project")
+        configureAllProjects()
+        apply(plugin = "org.jetbrains.kotlin.jvm")
+        apply<JavaLibraryPlugin>()
+        apply<MavenPublishPlugin>()
+        apply<SigningPlugin>()
+        apply<DokkaPlugin>()
+        apply<BintrayPlugin>()
+        configureJvm()
+        configureKtLint()
+        configureDokka()
+        createMavenPublications("jvm", "java", docArtifact = "packDokka")
+        configureUploadToMavenCentral()
+        configureUploadToBintray()
+        configureSigning()
+        configureUploadToGithub({ "shadow" in it })
+    }
+
     private fun Project.configureKtProject() {
         log("Auto-configure project `$name` as Kt project")
         configureAllProjects()
@@ -276,25 +296,6 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
         configureUploadToBintray()
         configureSigning()
         configureNpmPublishing()
-        configureUploadToGithub({ "shadow" in it })
-    }
-
-    private fun Project.configureJvmProject() {
-        log("Auto-configure project `$name` as JVM project")
-        configureAllProjects()
-        apply(plugin = "org.jetbrains.kotlin.jvm")
-        apply<JavaLibraryPlugin>()
-        apply<MavenPublishPlugin>()
-        apply<SigningPlugin>()
-        apply<DokkaPlugin>()
-        apply<BintrayPlugin>()
-        configureJvm()
-        configureKtLint()
-        configureDokka()
-        createMavenPublications("jvm", "java", docArtifact = "packDokka")
-        configureUploadToMavenCentral()
-        configureUploadToBintray()
-        configureSigning()
         configureUploadToGithub({ "shadow" in it })
     }
 
@@ -343,6 +344,7 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
     private fun Project.configureRootProject() {
         apply<GithubReleasePlugin>()
         configureKtProject()
+        configureGitHubReleaseForRootProject()
         configureDokkaMultiModule()
     }
 }
