@@ -337,9 +337,11 @@ object ProjectConfiguration {
                     liftPackageJsonToFixDependencies(it)
                     if (ktMpp.npmOrganization.isPresent) {
                         liftPackageJsonToSetOrganization(ktMpp.npmOrganization.get(), it)
-                        liftJsSources { _, _, line ->
-                            liftJsSourcesToSetOrganization(ktMpp.npmOrganization.get(), line)
-                        }
+                    }
+                }
+                if (ktMpp.npmOrganization.isPresent) {
+                    liftJsSources { _, _, line ->
+                        liftJsSourcesToSetOrganization(ktMpp.npmOrganization.get(), line)
                     }
                 }
             }
@@ -375,7 +377,7 @@ object ProjectConfiguration {
 
     fun Project.liftJsSourcesToSetOrganization(organizationName: String, line: String): String =
             line.replace("'${rootProject.name}", "'@$organizationName/${rootProject.name}")
-                    .replace("\"${rootProject.name}", "\"@$organizationName/${rootProject.name}")
+                .replace("\"${rootProject.name}", "\"@$organizationName/${rootProject.name}")
 
     fun Project.configureTestResultPrinting() {
         tasks.withType(AbstractTestTask::class.java) {

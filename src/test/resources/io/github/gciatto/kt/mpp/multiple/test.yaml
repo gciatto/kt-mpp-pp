@@ -18,3 +18,8 @@ tests:
       tasks: dokkaHtmlMultiModule
     expectation:
       success: dokkaHtmlMultiModule
+#  - description: "Multi-project MPP with JS sub-projects support lifting of JS sources"
+#    configuration:
+#      tasks: liftJsSources
+#    expectation:
+#      success: liftJsSources
