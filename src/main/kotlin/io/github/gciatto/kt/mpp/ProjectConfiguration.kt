@@ -92,7 +92,7 @@ object ProjectConfiguration {
 
         val archiveFiles = tasks.map { it.archiveFile }
 
-        rootProject.afterEvaluate {
+        rootProject.let {
             it.configure<GithubReleaseExtension> {
                 releaseAssets(*(releaseAssets.toList() + archiveFiles).toTypedArray())
             }
@@ -110,7 +110,7 @@ object ProjectConfiguration {
         tasks.withType(Zip::class.java).matching {
             val name = it.name.toLowerCase()
             jarTaskPositiveFilter(name) && !jarTaskNegativeFilter(name)
-        }.configureEach {
+        }.all {
             configureUploadToGithub(it)
         }
     }
