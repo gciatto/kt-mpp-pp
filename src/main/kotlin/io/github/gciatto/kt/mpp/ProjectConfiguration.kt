@@ -250,17 +250,19 @@ object ProjectConfiguration {
     }
 
     fun Project.configureDokkaMultiModule() {
-        tasks.withType(DokkaMultiModuleTask::class.java).all { dokkaHtmlMultiModule ->
-            val packDokkaMultiModule = tasks.maybeCreate("packDokkaMultiModule", Zip::class.java).also {
-                it.group = "documentation"
-                it.dependsOn(dokkaHtmlMultiModule)
-                it.from(dokkaHtmlMultiModule.outputDirectory.get())
-                it.archiveBaseName.set(project.name)
-                it.archiveVersion.set(project.version.toString())
-                it.archiveAppendix.set("documentation")
-            }
-            configureUploadToGithub(packDokkaMultiModule)
-        }
+        tasks.withType(DokkaMultiModuleTask::class.java)
+                .matching { it.name.contains("html", ignoreCase = true) }
+                .all { dokkaHtmlMultiModule ->
+                    val packDokkaMultiModule = tasks.maybeCreate("packDokkaMultiModule", Zip::class.java).also {
+                        it.group = "documentation"
+                        it.dependsOn(dokkaHtmlMultiModule)
+                        it.from(dokkaHtmlMultiModule.outputDirectory.get())
+                        it.archiveBaseName.set(project.name)
+                        it.archiveVersion.set(project.version.toString())
+                        it.archiveAppendix.set("documentation")
+                    }
+                    configureUploadToGithub(packDokkaMultiModule)
+                }
     }
 
     fun Project.configureMavenPublications(docArtifactBaseName: String) {
