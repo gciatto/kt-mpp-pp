@@ -3,7 +3,7 @@ tests:
     configuration:
       tasks: help
     expectation:
-      output_contains:
+      output_contains: &outputs
         - org.example:test-multiple:1.0.0
         - org.example:sub-js:1.0.0
         - org.example:sub-jvm:1.0.0
@@ -11,12 +11,16 @@ tests:
         - KotlinMultiplatformExtension_Decorated
         - KotlinJvmProjectExtension_Decorated
         - KotlinJsProjectExtension_Decorated
+        - org.example:sub-js:1.0.0 -> Developer(name=Giovanni Ciatto, email=giovanni.ciatto@gmail.com, homepage=http://about.me/gciatto, organization=null)
+        - org.example:sub-jvm:1.0.0 -> Developer(name=Giovanni Ciatto, email=giovanni.ciatto@gmail.com, homepage=http://about.me/gciatto, organization=null)
+        - org.example:sub-kt:1.0.0 -> Developer(name=Giovanni Ciatto, email=giovanni.ciatto@gmail.com, homepage=http://about.me/gciatto, organization=null)
       success: help
   - description: "Multi-project MPP builds support Dokka Multi-module"
     configuration:
       tasks: dokkaHtmlMultiModule
       options: --stacktrace
     expectation:
+      output_contains: *outputs
       success: dokkaHtmlMultiModule
 #  - description: "Multi-project MPP with JS sub-projects support lifting of JS sources"
 #    configuration:

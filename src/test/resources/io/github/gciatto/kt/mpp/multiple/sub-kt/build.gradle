@@ -16,6 +16,10 @@ kotlin {
     }
 }
 
+kotlinMultiplatform {
+    developers.whenObjectAdded { println("${project.group}:${project.name}:${project.version} -> $it") }
+}
+
 publishing {
     publications {
         maven(MavenPublication) {

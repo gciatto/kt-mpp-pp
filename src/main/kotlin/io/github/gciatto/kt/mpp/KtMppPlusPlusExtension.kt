@@ -1,5 +1,7 @@
 package io.github.gciatto.kt.mpp
 
+import io.github.gciatto.kt.mpp.ProjectExtensions.ktMpp
+import org.gradle.api.DomainObjectCollection
 import org.gradle.api.DomainObjectSet
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
@@ -88,6 +90,8 @@ open class KtMppPlusPlusExtension(objects: ObjectFactory) {
 
     val otherProjects: DomainObjectSet<String> = objects.domainObjectSet(String::class.java)
 
+    val allDevelopers: Set<Developer> get() = developers.toSet()
+
     @JvmOverloads
     fun developer(name: String, email: String, homepage: String? = null, organization: Organization? = null) =
             developers.add(Developer(name, email, homepage, organization))
@@ -146,7 +150,8 @@ open class KtMppPlusPlusExtension(objects: ObjectFactory) {
         preventPublishingOfRootProject.set(Defaults.PREVENT_PUBLISHING_OF_ROOT_PROJECT)
     }
 
-    fun copyPropertyValuesFrom(other: KtMppPlusPlusExtension) {
+    fun copyPropertyValuesFromParentOf(project: Project) {
+        val other: KtMppPlusPlusExtension = project.parent!!.ktMpp
         preventPublishingOfRootProject.set(other.preventPublishingOfRootProject)
         automaticallyConfigureSubprojects.set(other.automaticallyConfigureSubprojects)
         projectLongName.set(other.projectLongName)
@@ -164,7 +169,6 @@ open class KtMppPlusPlusExtension(objects: ObjectFactory) {
         mochaTimeout.set(other.mochaTimeout)
         javaVersion.set(other.javaVersion)
         ktFreeCompilerArgsJvm.set(other.ktFreeCompilerArgsJvm)
-        developers.addAll(other.developers)
         mavenRepo.set(other.mavenRepo)
         mavenUsername.set(other.mavenUsername)
         mavenPassword.set(other.mavenPassword)
@@ -176,9 +180,18 @@ open class KtMppPlusPlusExtension(objects: ObjectFactory) {
         npmOrganization.set(other.npmOrganization)
         issuesUrl.set(other.issuesUrl)
         issuesEmail.set(other.issuesEmail)
-        ktProjects.addAll(other.ktProjects)
-        jsProjects.addAll(other.jsProjects)
-        jvmProjects.addAll(other.jvmProjects)
-        otherProjects.addAll(other.otherProjects)
+        project.afterEvaluate {
+            developers.keepInSyncWith(other.developers)
+            ktProjects.keepInSyncWith(other.ktProjects)
+            jsProjects.keepInSyncWith(other.jsProjects)
+            jvmProjects.keepInSyncWith(other.jvmProjects)
+            otherProjects.keepInSyncWith(other.otherProjects)
+        }
+    }
+
+    private fun <T, C : DomainObjectCollection<T>> C.keepInSyncWith(other: C) {
+        other.all {
+            add(it)
+        }
     }
 }

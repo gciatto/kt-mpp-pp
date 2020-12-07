@@ -19,7 +19,6 @@ import io.github.gciatto.kt.mpp.ProjectConfiguration.configureUploadToGithub
 import io.github.gciatto.kt.mpp.ProjectConfiguration.configureUploadToMavenCentral
 import io.github.gciatto.kt.mpp.ProjectConfiguration.createMavenPublications
 import io.github.gciatto.kt.mpp.ProjectExtensions.isRootProject
-import io.github.gciatto.kt.mpp.ProjectExtensions.ktMpp
 import io.github.gciatto.kt.mpp.ProjectUtils.getPropertyOrDefault
 import io.github.gciatto.kt.mpp.ProjectUtils.getPropertyOrWarnForAbsence
 import io.github.gciatto.kt.mpp.ProjectUtils.log
@@ -62,7 +61,7 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
             target.configureProject(ProjectType.KT)
             target.configureSubprojects()
         } else {
-            extension.copyPropertyValuesFrom(target.rootProject.ktMpp)
+            extension.copyPropertyValuesFromParentOf(target)
             target.loadDefaultsFromProperties()
         }
     }
