@@ -181,10 +181,10 @@ publishing {
  * Publication on Maven Central and the Plugin portal
  */
 publishOnCentral {
-    projectLongName.set(info.longName)
-    projectDescription.set(description)
-    projectUrl.set(info.website)
-    scmConnection.set(info.scm)
-    licenseName.set(info.license)
-    licenseUrl.set(info.licenseUrl)
+    projectLongName = info.longName
+    projectDescription = project.description ?: "No description provided"
+    projectUrl = info.website
+    scmConnection = info.scm
+    licenseName = info.license
+    licenseUrl = info.licenseUrl
 }
