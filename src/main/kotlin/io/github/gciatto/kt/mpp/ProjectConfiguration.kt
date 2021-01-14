@@ -184,8 +184,10 @@ object ProjectConfiguration {
                 key = ktMpp.bintrayKey.get()
                 if (publicationNames.isEmpty()) {
                     configure<PublishingExtension> {
-                        setPublications(*publications.withType(MavenPublication::class.java).map { it.name }
-                            .toTypedArray())
+                        setPublications(
+                            *publications.withType(MavenPublication::class.java).map { it.name }
+                                .toTypedArray()
+                        )
                     }
                 } else {
                     setPublications(*publicationNames)
@@ -397,8 +399,8 @@ object ProjectConfiguration {
                     if (desc.parent == null) { // will match the outermost suite
                         println(
                             "Results: ${result.resultType} (${result.testCount} tests, " +
-                                    "${result.successfulTestCount} successes, ${result.failedTestCount} failures, " +
-                                    "${result.skippedTestCount} skipped)"
+                                "${result.successfulTestCount} successes, ${result.failedTestCount} failures, " +
+                                "${result.skippedTestCount} skipped)"
                         )
                     }
                 })

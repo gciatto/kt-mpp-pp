@@ -94,46 +94,46 @@ open class KtMppPlusPlusExtension(objects: ObjectFactory) {
 
     @JvmOverloads
     fun developer(name: String, email: String, homepage: String? = null, organization: Organization? = null) =
-            developers.add(Developer(name, email, homepage, organization))
+        developers.add(Developer(name, email, homepage, organization))
 
     fun org(name: String, url: String) =
-            Organization(name, url)
+        Organization(name, url)
 
     fun ktProjects(vararg names: String) =
-            ktProjects.addAll(listOf(*names))
+        ktProjects.addAll(listOf(*names))
 
     fun jvmOnlyProjects(vararg names: String) =
-            jvmProjects.addAll(listOf(*names))
+        jvmProjects.addAll(listOf(*names))
 
     fun jsOnlyProjects(vararg names: String) =
-            jsProjects.addAll(listOf(*names))
+        jsProjects.addAll(listOf(*names))
 
     fun otherProjects(vararg names: String) =
-            otherProjects.addAll(listOf(*names))
+        otherProjects.addAll(listOf(*names))
 
     fun ktProjects(vararg projects: Project) =
-            ktProjects.addAll(listOf(*projects).map { it.name })
+        ktProjects.addAll(listOf(*projects).map { it.name })
 
     fun jvmOnlyProjects(vararg projects: Project) =
-            jvmProjects.addAll(listOf(*projects).map { it.name })
+        jvmProjects.addAll(listOf(*projects).map { it.name })
 
     fun jsOnlyProjects(vararg projects: Project) =
-            jsProjects.addAll(listOf(*projects).map { it.name })
+        jsProjects.addAll(listOf(*projects).map { it.name })
 
     fun otherProjects(vararg projects: Project) =
-            otherProjects.addAll(listOf(*projects).map { it.name })
+        otherProjects.addAll(listOf(*projects).map { it.name })
 
     fun ktProjects(projects: Iterable<Project>) =
-            ktProjects.addAll(projects.map { it.name })
+        ktProjects.addAll(projects.map { it.name })
 
     fun jvmOnlyProjects(projects: Iterable<Project>) =
-            jvmProjects.addAll(projects.map { it.name })
+        jvmProjects.addAll(projects.map { it.name })
 
     fun jsOnlyProjects(projects: Iterable<Project>) =
-            jsProjects.addAll(projects.map { it.name })
+        jsProjects.addAll(projects.map { it.name })
 
     fun otherProjects(projects: Iterable<Project>) =
-            otherProjects.addAll(projects.map { it.name })
+        otherProjects.addAll(projects.map { it.name })
 
     val Project.allOtherSubprojects: List<Project>
         get() {

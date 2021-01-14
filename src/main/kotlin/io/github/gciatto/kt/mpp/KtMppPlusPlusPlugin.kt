@@ -52,9 +52,9 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
 
     override fun apply(target: Project) {
         extension = target.extensions.create(
-                KtMppPlusPlusExtension.NAME,
-                KtMppPlusPlusExtension::class.java,
-                target.objects
+            KtMppPlusPlusExtension.NAME,
+            KtMppPlusPlusExtension::class.java,
+            target.objects
         )
         if (target.isRootProject) {
             target.loadDefaultsFromProperties()
