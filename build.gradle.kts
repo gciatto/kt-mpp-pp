@@ -1,4 +1,4 @@
-
+import java.time.Duration
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
@@ -14,6 +14,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint")
     id("org.danilopianini.git-sensitive-semantic-versioning")
     id("org.danilopianini.publish-on-central")
+    id("de.marcphilipp.nexus-publish")
 }
 
 /*
@@ -27,7 +28,7 @@ inner class PluginInfo {
     val scm = "git@github.com:gciatto/kt-mpp-pp.git"
     val pluginImplementationClass = "$group.kt.mpp.KtMppPlusPlusPlugin"
     val tags = listOf("kotlin", "multi plaftorm", "mpp", "gradle")
-    val license = "Apache 2.0"
+    val license = "Apache License, Version 2.0"
     val licenseUrl = "https://www.apache.org/licenses/LICENSE-2.0"
 }
 val info = PluginInfo()
@@ -138,21 +139,35 @@ gradlePlugin {
     }
 }
 
+val signingKey: String? by project
+val signingPassword: String? by project
+
 signing {
-    val signingKey: String? by project
-    val signingPassword: String? by project
     useInMemoryPgpKeys(signingKey, signingPassword)
 }
 
+val mavenRepo: String by project
+val mavenUsername: String by project
+val mavenPassword: String by project
+
 publishing {
+    repositories {
+        maven(mavenRepo) {
+            credentials {
+                username = mavenUsername
+                password = mavenPassword
+            }
+        }
+    }
     publications {
         withType<MavenPublication> {
+            val pubName = name
             pom {
                 name.set(info.longName)
                 description.set(project.description)
                 packaging = "jar"
                 url.set(info.website)
-                if (!this@withType.name.contains("MavenCentral", ignoreCase=true)) {
+                if (pubName.contains("plugin", ignoreCase = true)) {
                     licenses {
                         license {
                             name.set(info.license)
@@ -177,9 +192,6 @@ publishing {
     }
 }
 
-/*
- * Publication on Maven Central and the Plugin portal
- */
 publishOnCentral {
     projectLongName = info.longName
     projectDescription = project.description ?: "No description provided"
@@ -187,4 +199,19 @@ publishOnCentral {
     scmConnection = info.scm
     licenseName = info.license
     licenseUrl = info.licenseUrl
+    repository(mavenRepo) {
+        user = mavenUsername
+        password = mavenPassword
+    }
+}
+
+nexusPublishing {
+    repositories {
+        listOf(sonatype(), create("sonatypeS01")).forEach {
+            it.nexusUrl.set(uri(mavenRepo))
+            it.username.set(mavenUsername)
+            it.password.set(mavenPassword)
+        }
+    }
+    clientTimeout.set(Duration.ofMinutes(10))
 }
