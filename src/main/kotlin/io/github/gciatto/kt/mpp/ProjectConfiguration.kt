@@ -293,8 +293,9 @@ object ProjectConfiguration {
             groupId = project.group.toString()
             version = project.version.toString()
             pom { pom ->
-                val moduleName = project.name.split('-').joinToString(" ") { it.capitalize() }
-                val pomName = project.ktMpp.projectLongName.get() + if (project.isMultiProject) {
+                val moduleName = project.ktMpp.projectLongName.get()
+                val rootName = project.rootProject.ktMpp.projectLongName.get()
+                val pomName = rootName + if (project.rootProject.isMultiProject) {
                     " -- Module `$moduleName`"
                 } else {
                     ""
@@ -308,7 +309,6 @@ object ProjectConfiguration {
                         it.url.set(project.ktMpp.projectLicenseUrl.get())
                     }
                 }
-
                 pom.developers { developers ->
                     project.ktMpp.developers.all { developer ->
                         developers.developer { dev ->
@@ -322,12 +322,10 @@ object ProjectConfiguration {
                         }
                     }
                 }
-
                 pom.scm { scm ->
                     scm.connection.set(project.ktMpp.scmConnection)
                     scm.url.set(project.ktMpp.scmUrl)
                 }
-
                 pom.issueManagement { issueManagement ->
                     issueManagement.url.set(project.ktMpp.issuesUrl.get())
                 }
