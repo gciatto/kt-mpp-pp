@@ -13,6 +13,8 @@ import io.github.gciatto.kt.mpp.ProjectExtensions.ktMpp
 import io.github.gciatto.kt.mpp.ProjectUtils.docDir
 import io.github.gciatto.kt.mpp.ProjectUtils.warn
 import io.github.gciatto.kt.node.Bugs
+import io.github.gciatto.kt.node.LiftJsSourcesTask
+import io.github.gciatto.kt.node.LiftPackageJsonTask
 import io.github.gciatto.kt.node.NpmPublishExtension
 import io.github.gciatto.kt.node.NpmPublishPlugin
 import io.github.gciatto.kt.node.NpmPublishTask
@@ -357,9 +359,15 @@ object ProjectConfiguration {
                 }
             }
             if (isRootProject) {
-                tasks.withType(NpmPublishTask::class.java).configureEach {
-                    it.onlyIf {
-                        !ktMpp.preventPublishingOfRootProject.getOrElse(PREVENT_PUBLISHING_OF_ROOT_PROJECT)
+                listOf(
+                    tasks.withType(NpmPublishTask::class.java),
+                    tasks.withType(LiftJsSourcesTask::class.java),
+                    tasks.withType(LiftPackageJsonTask::class.java),
+                ).forEach { taskSet ->
+                    taskSet.configureEach {
+                        it.onlyIf {
+                            !ktMpp.preventPublishingOfRootProject.getOrElse(PREVENT_PUBLISHING_OF_ROOT_PROJECT)
+                        }
                     }
                 }
             }
