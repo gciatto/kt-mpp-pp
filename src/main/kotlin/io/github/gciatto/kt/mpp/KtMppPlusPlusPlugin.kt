@@ -89,9 +89,11 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
 
     private fun Project.loadDefaultsFromProperties() {
         with(extension) {
-            projectLongName.set(provider {
-                name.split('-').joinToString(" ") { it.capitalize() }
-            })
+            projectLongName.set(
+                provider {
+                    name.split('-').joinToString(" ") { it.capitalize() }
+                }
+            )
             getPropertyOrWarnForAbsence("projectDescription").let { desc ->
                 projectDescription.set(provider { description.takeIf { it.isNullOrBlank() } ?: desc })
             }
