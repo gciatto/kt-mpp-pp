@@ -89,8 +89,14 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
 
     private fun Project.loadDefaultsFromProperties() {
         with(extension) {
-            projectLongName.set(project.provider { name })
-            projectDescription.set(getPropertyOrWarnForAbsence("projectDescription"))
+            projectLongName.set(
+                provider {
+                    name.split('-').joinToString(" ") { it.capitalize() }
+                }
+            )
+            getPropertyOrWarnForAbsence("projectDescription").let { desc ->
+                projectDescription.set(provider { description.takeIf { it.isNullOrBlank() } ?: desc })
+            }
             githubToken.set(getPropertyOrWarnForAbsence("githubToken"))
             githubOwner.set(getPropertyOrWarnForAbsence("githubOwner"))
             githubRepo.set(getPropertyOrWarnForAbsence("githubRepo"))
@@ -113,7 +119,7 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
             issuesUrl.set(getPropertyOrWarnForAbsence("issuesUrl"))
             issuesEmail.set(getPropertyOrWarnForAbsence("issuesEmail"))
 
-            mochaTimeout.set(getPropertyOrDefault("javaVersion", MOCHA_TIMEOUT).toLong())
+            mochaTimeout.set(getPropertyOrDefault("mochaTimeout", MOCHA_TIMEOUT).toLong())
             ktFreeCompilerArgsJvm.set(getPropertyOrDefault("ktFreeCompilerArgsJvm", KT_FREE_COMPILER_ARGS_JVM))
             mavenRepo.set(getPropertyOrDefault("mavenRepo", MAVEN_REPO))
         }

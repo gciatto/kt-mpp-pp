@@ -63,6 +63,7 @@ jobs:
           path: |
             ~/.m2/repository
             ~/.gradle/caches
+            ~/.gradle/wrapper
             ~/gradle/wrapper
             **/build
             **/.gradle
@@ -128,6 +129,7 @@ jobs:
           path: |
             ~/.m2/repository
             ~/.gradle/caches
+            ~/.gradle/wrapper
             ~/gradle/wrapper
             **/build
             **/.gradle

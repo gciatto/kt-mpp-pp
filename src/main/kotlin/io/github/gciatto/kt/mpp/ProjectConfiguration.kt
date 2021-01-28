@@ -13,6 +13,8 @@ import io.github.gciatto.kt.mpp.ProjectExtensions.ktMpp
 import io.github.gciatto.kt.mpp.ProjectUtils.docDir
 import io.github.gciatto.kt.mpp.ProjectUtils.warn
 import io.github.gciatto.kt.node.Bugs
+import io.github.gciatto.kt.node.LiftJsSourcesTask
+import io.github.gciatto.kt.node.LiftPackageJsonTask
 import io.github.gciatto.kt.node.NpmPublishExtension
 import io.github.gciatto.kt.node.NpmPublishPlugin
 import io.github.gciatto.kt.node.NpmPublishTask
@@ -293,8 +295,9 @@ object ProjectConfiguration {
             groupId = project.group.toString()
             version = project.version.toString()
             pom { pom ->
-                val moduleName = project.name.split('-').joinToString(" ") { it.capitalize() }
-                val pomName = project.ktMpp.projectLongName.get() + if (project.isMultiProject) {
+                val moduleName = project.ktMpp.projectLongName.get()
+                val rootName = project.rootProject.ktMpp.projectLongName.get()
+                val pomName = rootName + if (project.rootProject.isMultiProject) {
                     " -- Module `$moduleName`"
                 } else {
                     ""
@@ -308,7 +311,6 @@ object ProjectConfiguration {
                         it.url.set(project.ktMpp.projectLicenseUrl.get())
                     }
                 }
-
                 pom.developers { developers ->
                     project.ktMpp.developers.all { developer ->
                         developers.developer { dev ->
@@ -322,12 +324,10 @@ object ProjectConfiguration {
                         }
                     }
                 }
-
                 pom.scm { scm ->
                     scm.connection.set(project.ktMpp.scmConnection)
                     scm.url.set(project.ktMpp.scmUrl)
                 }
-
                 pom.issueManagement { issueManagement ->
                     issueManagement.url.set(project.ktMpp.issuesUrl.get())
                 }
@@ -359,9 +359,15 @@ object ProjectConfiguration {
                 }
             }
             if (isRootProject) {
-                tasks.withType(NpmPublishTask::class.java).configureEach {
-                    it.onlyIf {
-                        !ktMpp.preventPublishingOfRootProject.getOrElse(PREVENT_PUBLISHING_OF_ROOT_PROJECT)
+                listOf(
+                    tasks.withType(NpmPublishTask::class.java),
+                    tasks.withType(LiftJsSourcesTask::class.java),
+                    tasks.withType(LiftPackageJsonTask::class.java),
+                ).forEach { taskSet ->
+                    taskSet.configureEach {
+                        it.onlyIf {
+                            !ktMpp.preventPublishingOfRootProject.getOrElse(PREVENT_PUBLISHING_OF_ROOT_PROJECT)
+                        }
                     }
                 }
             }
