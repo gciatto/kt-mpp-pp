@@ -92,6 +92,8 @@ open class KtMppPlusPlusExtension(objects: ObjectFactory) {
 
     val allDevelopers: Set<Developer> get() = developers.toSet()
 
+    val nodeJsVersion: Property<String> = objects.property()
+
     @JvmOverloads
     fun developer(name: String, email: String, homepage: String? = null, organization: Organization? = null) =
         developers.add(Developer(name, email, homepage, organization))

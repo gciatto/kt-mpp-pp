@@ -19,6 +19,7 @@ import io.github.gciatto.kt.mpp.ProjectConfiguration.configureUploadToGithub
 import io.github.gciatto.kt.mpp.ProjectConfiguration.configureUploadToMavenCentral
 import io.github.gciatto.kt.mpp.ProjectConfiguration.createMavenPublications
 import io.github.gciatto.kt.mpp.ProjectExtensions.isRootProject
+import io.github.gciatto.kt.mpp.ProjectExtensions.ktMpp
 import io.github.gciatto.kt.mpp.ProjectUtils.getPropertyOrDefault
 import io.github.gciatto.kt.mpp.ProjectUtils.getPropertyOrWarnForAbsence
 import io.github.gciatto.kt.mpp.ProjectUtils.log
@@ -44,6 +45,8 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsTargetDsl
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
 import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
 
 class KtMppPlusPlusPlugin : Plugin<Project> {
@@ -197,7 +200,7 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
         withJava()
     }
 
-    private fun KotlinJsTargetDsl.configureNodeJs() {
+    private fun KotlinJsTargetDsl.configureNodeJsTests() {
         nodejs {
             testTask {
                 useMocha {
@@ -242,10 +245,21 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
                 configureMppJvmSourceSets()
             }
             js {
-                configureNodeJs()
+                configureNodeJsVersion()
+                configureNodeJsTests()
                 configureMppTarget()
                 configureKtJsCompilation()
                 configureJsSourceSets()
+            }
+        }
+    }
+
+    private fun Project.configureNodeJsVersion() {
+        plugins.withType(NodeJsRootPlugin::class.java) {
+            configure<NodeJsRootExtension> {
+                ktMpp.nodeJsVersion.takeIf { it.isPresent }?.let {
+                    nodeVersion = it.get()
+                }
             }
         }
     }
@@ -326,7 +340,8 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
     private fun Project.configureJs() {
         configure<KotlinJsProjectExtension> {
             js {
-                configureNodeJs()
+                configureNodeJsVersion()
+                configureNodeJsTests()
                 configureKtJsCompilation()
                 configureJsSourceSets()
             }
