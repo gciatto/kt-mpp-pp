@@ -170,6 +170,7 @@ open class KtMppPlusPlusExtension(objects: ObjectFactory) {
         projectLicenseUrl.set(other.projectLicenseUrl)
         mochaTimeout.set(other.mochaTimeout)
         javaVersion.set(other.javaVersion)
+        nodeJsVersion.set(other.nodeJsVersion)
         ktFreeCompilerArgsJvm.set(other.ktFreeCompilerArgsJvm)
         mavenRepo.set(other.mavenRepo)
         mavenUsername.set(other.mavenUsername)
