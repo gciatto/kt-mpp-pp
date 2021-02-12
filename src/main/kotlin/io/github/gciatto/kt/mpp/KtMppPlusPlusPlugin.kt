@@ -35,6 +35,7 @@ import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.kotlin
+import org.gradle.kotlin.dsl.the
 import org.gradle.kotlin.dsl.withType
 import org.gradle.plugins.signing.SigningPlugin
 import org.jetbrains.dokka.gradle.DokkaPlugin
@@ -121,6 +122,7 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
             findProperty("npmOrganization")?.let { npmOrganization.set(it.toString()) }
             issuesUrl.set(getPropertyOrWarnForAbsence("issuesUrl"))
             issuesEmail.set(getPropertyOrWarnForAbsence("issuesEmail"))
+            nodeJsVersion.set(getPropertyOrWarnForAbsence("nodeJsVersion"))
 
             mochaTimeout.set(getPropertyOrDefault("mochaTimeout", MOCHA_TIMEOUT).toLong())
             ktFreeCompilerArgsJvm.set(getPropertyOrDefault("ktFreeCompilerArgsJvm", KT_FREE_COMPILER_ARGS_JVM))
@@ -200,7 +202,7 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
         withJava()
     }
 
-    private fun KotlinJsTargetDsl.configureNodeJsTests() {
+    private fun KotlinJsTargetDsl.configureNodeJs() {
         nodejs {
             testTask {
                 useMocha {
@@ -245,20 +247,21 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
                 configureMppJvmSourceSets()
             }
             js {
-                configureNodeJsVersion()
-                configureNodeJsTests()
+                configureNodeJs()
                 configureMppTarget()
                 configureKtJsCompilation()
                 configureJsSourceSets()
+                configureNodeJsVersion()
             }
         }
     }
 
     private fun Project.configureNodeJsVersion() {
-        plugins.withType(NodeJsRootPlugin::class.java) {
-            configure<NodeJsRootExtension> {
+        plugins.withType(NodeJsRootPlugin::class.java) { _ ->
+            the<NodeJsRootExtension>().let { nodeJsExt ->
                 ktMpp.nodeJsVersion.takeIf { it.isPresent }?.let {
-                    nodeVersion = it.get()
+                    log("Use NodeJs v${it.get()} for project $name")
+                    nodeJsExt.nodeVersion = it.get()
                 }
             }
         }
@@ -340,10 +343,10 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
     private fun Project.configureJs() {
         configure<KotlinJsProjectExtension> {
             js {
-                configureNodeJsVersion()
-                configureNodeJsTests()
+                configureNodeJs()
                 configureKtJsCompilation()
                 configureJsSourceSets()
+                configureNodeJsVersion()
             }
             tasks.maybeCreate("sourcesJar", Jar::class.java).run {
                 sourceSets.forEach { sourceSet ->
