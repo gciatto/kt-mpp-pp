@@ -92,6 +92,8 @@ open class KtMppPlusPlusExtension(objects: ObjectFactory) {
 
     val allDevelopers: Set<Developer> get() = developers.toSet()
 
+    val nodeJsVersion: Property<String> = objects.property()
+
     @JvmOverloads
     fun developer(name: String, email: String, homepage: String? = null, organization: Organization? = null) =
         developers.add(Developer(name, email, homepage, organization))
@@ -168,6 +170,7 @@ open class KtMppPlusPlusExtension(objects: ObjectFactory) {
         projectLicenseUrl.set(other.projectLicenseUrl)
         mochaTimeout.set(other.mochaTimeout)
         javaVersion.set(other.javaVersion)
+        nodeJsVersion.set(other.nodeJsVersion)
         ktFreeCompilerArgsJvm.set(other.ktFreeCompilerArgsJvm)
         mavenRepo.set(other.mavenRepo)
         mavenUsername.set(other.mavenUsername)

@@ -19,6 +19,7 @@ import io.github.gciatto.kt.mpp.ProjectConfiguration.configureUploadToGithub
 import io.github.gciatto.kt.mpp.ProjectConfiguration.configureUploadToMavenCentral
 import io.github.gciatto.kt.mpp.ProjectConfiguration.createMavenPublications
 import io.github.gciatto.kt.mpp.ProjectExtensions.isRootProject
+import io.github.gciatto.kt.mpp.ProjectExtensions.ktMpp
 import io.github.gciatto.kt.mpp.ProjectUtils.getPropertyOrDefault
 import io.github.gciatto.kt.mpp.ProjectUtils.getPropertyOrWarnForAbsence
 import io.github.gciatto.kt.mpp.ProjectUtils.log
@@ -34,6 +35,7 @@ import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.kotlin
+import org.gradle.kotlin.dsl.the
 import org.gradle.kotlin.dsl.withType
 import org.gradle.plugins.signing.SigningPlugin
 import org.jetbrains.dokka.gradle.DokkaPlugin
@@ -44,6 +46,8 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsTargetDsl
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
 import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
 
 class KtMppPlusPlusPlugin : Plugin<Project> {
@@ -118,6 +122,7 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
             findProperty("npmOrganization")?.let { npmOrganization.set(it.toString()) }
             issuesUrl.set(getPropertyOrWarnForAbsence("issuesUrl"))
             issuesEmail.set(getPropertyOrWarnForAbsence("issuesEmail"))
+            nodeJsVersion.set(getPropertyOrWarnForAbsence("nodeJsVersion"))
 
             mochaTimeout.set(getPropertyOrDefault("mochaTimeout", MOCHA_TIMEOUT).toLong())
             ktFreeCompilerArgsJvm.set(getPropertyOrDefault("ktFreeCompilerArgsJvm", KT_FREE_COMPILER_ARGS_JVM))
@@ -246,6 +251,18 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
                 configureMppTarget()
                 configureKtJsCompilation()
                 configureJsSourceSets()
+                configureNodeJsVersion()
+            }
+        }
+    }
+
+    private fun Project.configureNodeJsVersion() {
+        plugins.withType(NodeJsRootPlugin::class.java) { _ ->
+            the<NodeJsRootExtension>().let { nodeJsExt ->
+                ktMpp.nodeJsVersion.takeIf { it.isPresent }?.let {
+                    log("Use NodeJs v${it.get()} for project $name")
+                    nodeJsExt.nodeVersion = it.get()
+                }
             }
         }
     }
@@ -329,6 +346,7 @@ class KtMppPlusPlusPlugin : Plugin<Project> {
                 configureNodeJs()
                 configureKtJsCompilation()
                 configureJsSourceSets()
+                configureNodeJsVersion()
             }
             tasks.maybeCreate("sourcesJar", Jar::class.java).run {
                 sourceSets.forEach { sourceSet ->
